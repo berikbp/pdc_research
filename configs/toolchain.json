@@ -1,0 +1,4 @@
+{
+  "llama_cpp_repository": "https://github.com/ggml-org/llama.cpp.git",
+  "llama_cpp_commit": "ecdd29e8b2076bb85da9e9ca7ee3d84264375bd1"
+}

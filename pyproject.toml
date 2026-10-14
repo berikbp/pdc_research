@@ -1,0 +1,17 @@
+[project]
+name = "pdc-research"
+version = "0.1.0"
+description = "Reproducible multilingual CPU–GPU inference experiments with FLORES-200 and llama.cpp"
+readme = "README.md"
+authors = [
+    { name = "Satybaldy Berik", email = "240107019@sdu.edu.kz" }
+]
+requires-python = ">=3.12"
+dependencies = []
+
+[project.scripts]
+pdc-research = "pdc_research:main"
+
+[build-system]
+requires = ["uv_build>=0.12.6,<0.13.0"]
+build-backend = "uv_build"

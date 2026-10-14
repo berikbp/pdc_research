@@ -1,0 +1,14 @@
+{
+  "machine_id": "replace-with-unique-machine-id",
+  "model": "models/qwen2.5-7b-instruct-q4_k_m.gguf",
+  "llama_bin": "vendor/llama.cpp/build/bin",
+  "threads": [4, 8],
+  "gpu_layers": [0, 8, 16, 24, 28, 99],
+  "context_size": 2048,
+  "batch_size": 512,
+  "ubatch_size": 128,
+  "port": 8080,
+  "startup_timeout_seconds": 180,
+  "request_timeout_seconds": 600,
+  "notes": "Edit paths and feasible offload settings. 99 requests all layers; logs record actual placement."
+}

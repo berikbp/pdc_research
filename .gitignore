@@ -1,0 +1,42 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info/
+
+# Virtual environments
+.venv/
+venv/
+
+# Test, coverage, and tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Downloaded assets, local configuration, and generated measurements
+/vendor/
+/models/
+/data/
+/runs/
+configs/machines/*.local.json
+configs/experiments/*.local.json
+
+# Credentials, local editor settings, and operating-system files
+.env
+.env.*
+!.env.example
+.aws/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~

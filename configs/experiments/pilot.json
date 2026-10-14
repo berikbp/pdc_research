@@ -1,0 +1,13 @@
+{
+  "experiment_id": "flores-pilot-v1",
+  "split": "dev",
+  "languages": ["eng_Latn", "rus_Cyrl", "kaz_Cyrl", "zho_Hans"],
+  "groups": 20,
+  "sentences_per_group": 4,
+  "seed": 42,
+  "repetitions": 3,
+  "warmups": 1,
+  "output_tokens": 64,
+  "matched_tokens": [64, 128],
+  "synthetic_prompt_tokens": [64, 128, 256, 512]
+}

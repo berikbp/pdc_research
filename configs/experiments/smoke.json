@@ -1,0 +1,13 @@
+{
+  "experiment_id": "flores-smoke-v1",
+  "split": "dev",
+  "languages": ["eng_Latn", "rus_Cyrl", "kaz_Cyrl", "zho_Hans"],
+  "groups": 1,
+  "sentences_per_group": 4,
+  "seed": 42,
+  "repetitions": 1,
+  "warmups": 1,
+  "output_tokens": 16,
+  "matched_tokens": [32],
+  "synthetic_prompt_tokens": [64]
+}
