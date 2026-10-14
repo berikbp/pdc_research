@@ -84,7 +84,7 @@ class MeasurementTests(unittest.TestCase):
                  patch("pdc_research.backend.request", fake_request), \
                  patch("pdc_research.runner.capture", return_value={}):
                 run(machine, experiment, manifest, root / "result")
-                trials = load_rows(root / "result/trials.jsonl")
+                trials = [json.loads(p.read_text()) for p in (root / "result/prompts/001/results").glob("*.json")]
                 self.assertEqual(len(trials), 4)  # Two modes x two repetitions; warm-up excluded.
                 self.assertTrue(all(t["status"] == "ok" for t in trials))
                 self.assertEqual(json.loads((root / "result/coverage.json").read_text())["matched-8"], 0)
@@ -92,15 +92,16 @@ class MeasurementTests(unittest.TestCase):
                     run(machine, experiment, manifest, root / "result")
 
                 with patch("pdc_research.runner.completion", side_effect=[({}, 0), ValueError("bad timing")]):
-                    with self.assertRaisesRegex(RuntimeError, "1 configurations failed"):
+                    with self.assertRaisesRegex(RuntimeError, "Prompt 1 incomplete"):
                         run(machine, experiment, manifest, root / "failed")
-                failures = load_rows(root / "failed/trials.jsonl")
+                failures = [json.loads(p.read_text()) for p in (root / "failed/prompts/001/errors").glob("*.json")]
                 trial = next(row for row in failures if row.get("scope") == "trial")
                 self.assertEqual(trial["group_id"], "a")
                 self.assertEqual(trial["language"], "en")
                 self.assertEqual(trial["status"], "error")
                 status = json.loads((root / "failed/status.json").read_text())
-                self.assertEqual(status["failed_configurations"], 1)
+                self.assertEqual(status["phase"], "failed")
+                self.assertEqual(status["successful"], 0)
 
     def test_request_disables_cache_and_checks_fixed_lengths(self):
         response = {"timings": {"prompt_n": 3, "predicted_n": 2, "cache_n": 0}}

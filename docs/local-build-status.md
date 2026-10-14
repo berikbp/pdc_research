@@ -23,4 +23,5 @@ options in `vendor/llama.cpp/build/pdc-build.json`. Keep the `vendor/cuda` direc
 alongside this build because its shared libraries are used at runtime.
 
 No model inference or FLORES performance results were collected during this build.
-Next: obtain the GGUF model and FLORES-200, then run the documented smoke experiment.
+The subsequent asset setup downloaded and verified the pinned model and FLORES-200,
+and prepared both workload manifests. Next: run the documented smoke experiment.

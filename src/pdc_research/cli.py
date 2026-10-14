@@ -5,6 +5,7 @@ import json
 import subprocess
 
 from .baseline import run_baseline
+from .checkpoints import read_status
 from .common import write_json
 from .config import experiment_plan, load_configs, load_experiment
 from .hardware import hardware_report
@@ -12,7 +13,7 @@ from .runner import run
 from .workloads import prepare
 
 DEFAULT_EXPERIMENT = "configs/experiments/pilot.json"
-DEFAULT_MANIFEST = "data/workloads/pilot.jsonl"
+DEFAULT_MANIFEST = "data/workloads/pilot-v3.jsonl"
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -20,6 +21,8 @@ def build_parser() -> argparse.ArgumentParser:
     commands = parser.add_subparsers(dest="command", required=True)
     doctor = commands.add_parser("doctor", help="Record visible hardware and installed tools")
     doctor.add_argument("--output", default="runs/hardware.json")
+    status = commands.add_parser("status", help="Show saved progress without running inference")
+    status.add_argument("--output", required=True, help="Existing run directory")
     prep = commands.add_parser("prepare", help="Prepare aligned FLORES sentence groups")
     prep.add_argument("--experiment", default=DEFAULT_EXPERIMENT)
     prep.add_argument("--source", required=True, help="Extracted FLORES root containing dev/ and devtest/")
@@ -30,14 +33,21 @@ def build_parser() -> argparse.ArgumentParser:
         sub.add_argument("--experiment", default=DEFAULT_EXPERIMENT)
         if name == "run":
             sub.add_argument("--manifest", default=DEFAULT_MANIFEST)
+            sub.add_argument("--resume", action="store_true", help="Continue an existing compatible run")
+            sub.add_argument("--stop-after-prompts", type=int, help="Pause after this many prompt groups in total")
         if name in ("run", "baseline"):
             sub.add_argument(
-                "--output", required=True, help="New output directory; existing directories refused"
+                "--output", required=True,
+                help=("Run directory (use --resume to continue a run)" if name == "run"
+                      else "New baseline directory; existing directories refused")
             )
     return parser
 
 
 def dispatch(args: argparse.Namespace) -> None:
+    if args.command == "status":
+        print(json.dumps(read_status(args.output), indent=2))
+        return
     if args.command == "doctor":
         report = hardware_report()
         write_json(args.output, report)
@@ -51,7 +61,8 @@ def dispatch(args: argparse.Namespace) -> None:
     if args.command == "plan":
         print(json.dumps(experiment_plan(machine, experiment), indent=2))
     elif args.command == "run":
-        run(machine, experiment, args.manifest, args.output)
+        run(machine, experiment, args.manifest, args.output,
+            resume=args.resume, stop_after_prompts=args.stop_after_prompts)
     elif args.command == "baseline":
         run_baseline(machine, experiment, args.output)
 
@@ -61,5 +72,7 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
     try:
         dispatch(args)
+    except KeyboardInterrupt:
+        parser.exit(130, "Interrupted. Saved results are preserved; use --resume for this run.\n")
     except (OSError, ValueError, KeyError, RuntimeError, subprocess.CalledProcessError) as exc:
         parser.exit(1, f"Error: {exc}\n")

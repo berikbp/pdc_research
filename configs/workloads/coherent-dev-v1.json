@@ -1,0 +1,226 @@
+{
+  "split": "dev",
+  "selection_method": "curated single-article passages; original source text preserved",
+  "groups": [
+    {
+      "sentence_ids": [
+        369,
+        370,
+        371,
+        372
+      ],
+      "source_url": "https://en.wikibooks.org/wiki/Wikijunior:Dinosaurs/Triceratops",
+      "title_en": "Triceratops feeding",
+      "title_kk": "Трицератопстың қоректенуі"
+    },
+    {
+      "sentence_ids": [
+        596,
+        597,
+        598,
+        599
+      ],
+      "source_url": "https://en.wikibooks.org/wiki/Wikijunior:Biology/Cells",
+      "title_en": "Cells and microscopy",
+      "title_kk": "Жасушалар және микроскоп"
+    },
+    {
+      "sentence_ids": [
+        601,
+        602,
+        603,
+        604
+      ],
+      "source_url": "https://en.wikibooks.org/wiki/Wikijunior:The_Elements/Matter_Is_The_Stuff_Around_You",
+      "title_en": "States of matter",
+      "title_kk": "Заттың агрегаттық күйлері"
+    },
+    {
+      "sentence_ids": [
+        606,
+        607,
+        608,
+        609
+      ],
+      "source_url": "https://en.wikibooks.org/wiki/Wikijunior:How_Things_Work/Time",
+      "title_en": "Understanding time",
+      "title_kk": "Уақыт ұғымы"
+    },
+    {
+      "sentence_ids": [
+        625,
+        626,
+        627,
+        628
+      ],
+      "source_url": "https://en.wikibooks.org/wiki/Cognitive_Psychology_and_Cognitive_Neuroscience/Problem_Solving_from_an_Evolutionary_Perspective",
+      "title_en": "Convergent thinking",
+      "title_kk": "Конвергенциялық ойлау"
+    },
+    {
+      "sentence_ids": [
+        640,
+        641,
+        642,
+        643
+      ],
+      "source_url": "https://en.wikibooks.org/wiki/Blended_Learning_in_K-12/Synchronous_and_asynchronous_communication_methods",
+      "title_en": "Asynchronous learning",
+      "title_kk": "Асинхронды оқыту"
+    },
+    {
+      "sentence_ids": [
+        402,
+        403,
+        404,
+        405
+      ],
+      "source_url": "https://en.wikibooks.org/wiki/Wikijunior:World_War_II/Submarines",
+      "title_en": "Submarines",
+      "title_kk": "Сүңгуір қайықтар"
+    },
+    {
+      "sentence_ids": [
+        433,
+        434,
+        435,
+        436
+      ],
+      "source_url": "https://en.wikibooks.org/wiki/Wikijunior:Europe/Luxembourg",
+      "title_en": "History of Luxembourg",
+      "title_kk": "Люксембург тарихы"
+    },
+    {
+      "sentence_ids": [
+        135,
+        136,
+        137,
+        138
+      ],
+      "source_url": "https://en.wikinews.org/wiki/Red_tide_affects_South_Padre_Island,_Mexico",
+      "title_en": "Red tide and marine algae",
+      "title_kk": "Қызыл толқын және теңіз балдырлары"
+    },
+    {
+      "sentence_ids": [
+        324,
+        325,
+        326,
+        327
+      ],
+      "source_url": "https://en.wikinews.org/wiki/Tropical_Storm_Danielle_forms_in_Atlantic_Ocean",
+      "title_en": "Tropical Storm Danielle",
+      "title_kk": "Даниэль тропикалық дауылы"
+    },
+    {
+      "sentence_ids": [
+        660,
+        661,
+        662,
+        663
+      ],
+      "source_url": "https://en.wikivoyage.org/wiki/San_Francisco",
+      "title_en": "San Francisco economy and tourism",
+      "title_kk": "Сан-Франциско экономикасы және туризмі"
+    },
+    {
+      "sentence_ids": [
+        670,
+        671,
+        672,
+        673
+      ],
+      "source_url": "https://en.wikivoyage.org/wiki/Grand_Canyon",
+      "title_en": "Grand Canyon camping permits",
+      "title_kk": "Гранд-Каньонда кемпингке рұқсат алу"
+    },
+    {
+      "sentence_ids": [
+        680,
+        681,
+        682,
+        683
+      ],
+      "source_url": "https://en.wikivoyage.org/wiki/Victoria_Falls",
+      "title_en": "Victoria Falls",
+      "title_kk": "Виктория сарқырамасы"
+    },
+    {
+      "sentence_ids": [
+        712,
+        713,
+        714,
+        715
+      ],
+      "source_url": "https://en.wikivoyage.org/wiki/Galapagos_Islands",
+      "title_en": "Visiting the Galapagos by boat",
+      "title_kk": "Галапагос аралдарына кемемен бару"
+    },
+    {
+      "sentence_ids": [
+        760,
+        761,
+        762,
+        763
+      ],
+      "source_url": "https://en.wikivoyage.org/wiki/Hospitality_exchange",
+      "title_en": "Hospitality exchange networks",
+      "title_kk": "Қонақжайлылықпен алмасу желілері"
+    },
+    {
+      "sentence_ids": [
+        773,
+        774,
+        775,
+        776
+      ],
+      "source_url": "https://en.wikivoyage.org/wiki/World%27s_Fair",
+      "title_en": "World fairs and horticultural exhibitions",
+      "title_kk": "Дүниежүзілік және бау-бақша көрмелері"
+    },
+    {
+      "sentence_ids": [
+        782,
+        783,
+        784,
+        785
+      ],
+      "source_url": "https://en.wikivoyage.org/wiki/Wildlife_photography",
+      "title_en": "Wildlife photography",
+      "title_kk": "Жабайы табиғатты суретке түсіру"
+    },
+    {
+      "sentence_ids": [
+        812,
+        813,
+        814,
+        815
+      ],
+      "source_url": "https://en.wikivoyage.org/wiki/Hiking",
+      "title_en": "Day hiking",
+      "title_kk": "Бір күндік жаяу серуен"
+    },
+    {
+      "sentence_ids": [
+        915,
+        916,
+        917,
+        918
+      ],
+      "source_url": "https://en.wikivoyage.org/wiki/Smartphone_apps_for_travellers",
+      "title_en": "Text translation applications",
+      "title_kk": "Мәтін аударуға арналған қолданбалар"
+    },
+    {
+      "sentence_ids": [
+        967,
+        968,
+        969,
+        970
+      ],
+      "source_url": "https://en.wikivoyage.org/wiki/Cinque_Terre",
+      "title_en": "Cinque Terre villages",
+      "title_kk": "Чинкве Терре ауылдары"
+    }
+  ]
+}

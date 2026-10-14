@@ -22,7 +22,7 @@ class ConfigTests(unittest.TestCase):
         plan = experiment_plan(self.machine, self.experiment)
         self.assertEqual(plan["configurations"], 12)
         self.assertEqual(plan["aligned_inputs"], 80)
-        self.assertEqual(plan["aligned_measured_requests"], 2880)
+        self.assertEqual(plan["aligned_measured_requests"], 960)
 
     def test_invalid_execution_settings_are_rejected(self):
         for key, value in (

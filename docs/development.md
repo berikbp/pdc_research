@@ -10,11 +10,14 @@ Keep the command line interface small and put experiment behavior in its owning 
 | `workloads.py` | FLORES alignment, sampling, and token-matched case construction |
 | `backend.py` | llama.cpp commands, server lifetime, completion requests and measurement checks |
 | `baseline.py` | Synthetic llama-bench execution and artifacts |
-| `runner.py` | Real-text experiment orchestration and trial recording |
+| `runner.py` | Prompt-first orchestration, warm-ups, pause controls and resume |
+| `checkpoints.py` | Atomic result writes, process locks, progress and per-prompt summaries |
 | `common.py` | JSON, hashing, subprocess capture, and HTTP helpers |
 
 The build script separates argument validation, source checkout, CUDA configuration,
 and build metadata recording. Changing Python orchestration does not require a native rebuild.
+`scripts/download_assets.py` uses `configs/assets.json` to resume and verify asset
+downloads, merge model shards, and check extracted dataset files against the archive.
 
 Run from the repository root:
 
@@ -25,7 +28,7 @@ uv run pdc-research plan --machine configs/machines/berik-wsl.json
 
 Tests do not need a model, dataset, or GPU. They cover aligned sampling, token-matched
 eligibility, configuration validation, trial budgets, cache/length checks, preserved
-failed-trial identities, run-directory protection, and dirty upstream checkout protection.
+failed-trial identities, run-directory protection, interrupted-run resume, immutable successful results, fingerprint mismatch rejection, atomic writes, process locking, and dirty upstream checkout protection.
 Validate actual backend changes separately with the smoke experiment in `docs/setup.md`.
 
 Commit source, tests, shared JSON settings, documentation, `.python-version`, and `uv.lock`.

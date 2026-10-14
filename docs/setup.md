@@ -74,11 +74,24 @@ The compatibility issue and declaration fix are described in the
 
 ## 3. Model
 
+For the pinned assets used by this project, run:
+
+```bash
+uv run python scripts/download_assets.py
+```
+
+This retrieves and verifies the two official GGUF shards, merges them using the
+built tool, and downloads/extracts the original FLORES-200 archive. Revisions,
+sizes, and SHA-256 values are pinned in `configs/assets.json`. Partial downloads
+are resumable; model files and metadata remain under ignored `models/` and `data/`.
+Use `--only model` or `--only dataset` for a single asset. Keep the shards until
+the merged model is verified; this workflow uses roughly 9.4 GB for model assets.
+
 The provisional shared model is **Qwen2.5-7B-Instruct, Q4_K_M**, a dense model with
 28 transformer layers. This is an execution benchmark, not an evaluation of its
 Kazakh generation quality. Validate the model choice during the pilot.
 
-Download the Q4_K_M GGUF file(s) from the
+Alternatively, download the Q4_K_M GGUF file(s) from the
 [official model repository](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GGUF).
 Keep all shards if split. Merge using the built `llama-gguf-split --merge FIRST_SHARD OUTPUT`
 and set `model` to the resulting file. The default path is:
@@ -114,7 +127,10 @@ license and citation requirements when distributing it.
 uv run pdc-research prepare --source data/raw/flores200_dataset
 ```
 
-This creates `data/workloads/pilot.jsonl` and its metadata sidecar. Existing manifests
+This creates `data/workloads/pilot-v3.jsonl` and its metadata sidecar. The pilot uses
+the frozen single-article selection in `configs/workloads/coherent-dev-v1.json`;
+preparation rejects article-boundary crossings, overlapping IDs, and source URL mismatches.
+Existing manifests
 are refused; use a new output path to change settings. Share this exact manifest
 and sidecar with teammates, or verify matching hashes after regeneration.
 
@@ -157,20 +173,14 @@ start a fresh server for each configuration, reuse the loaded model for sequenti
 requests, and stop that server when finished. Keep port 8080 free or change the profile.
 Only one benchmark should run on a machine at a time.
 
-Every real-text run creates:
-
-- `metadata.json`: configuration snapshots, model/binary/workload hashes, build version, GPU snapshot.
-- `cases.json`: exact model token IDs, source counts, modes, and sentence IDs.
-- `coverage.json`: eligible input counts per mode, including zero-coverage lengths.
-- `trials.jsonl`: raw completion responses, timing fields, repetition IDs, and errors.
-- `server-*.log`: startup information, requested command, and offload diagnostics.
-- `status.json`: completion status and failed configuration count.
+Real-text runs now save durable per-request JSON files and per-prompt summaries.
+See [running and resuming](running-and-resuming.md) for the artifact layout, pause
+controls, and resume commands. Existing runs require explicit `--resume`, and
+model, workload, settings, and backend fingerprints must match.
 
 Record `doctor` output beside the run. Keep the laptop plugged in, use the same power
-mode, stop competing workloads, and record cooling/power conditions. The experiment
-does not change system power settings. Existing run directories are refused. There
-is no automatic resume; a fresh directory is required for a rerun. Interrupted runs
-have no completed status file. Failed configurations produce a nonzero exit status.
+mode, stop competing workloads, and record cooling/power conditions. Only run one
+benchmark on a machine at a time. A process lock also protects each run directory.
 
 ## Troubleshooting
 

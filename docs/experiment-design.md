@@ -9,19 +9,22 @@ be demonstrated rather than assumed. A negative result is a valid outcome.
 
 ## Pilot sample budget
 
-`pilot.json` selects 20 non-overlapping groups of four consecutive FLORES dev
-sentences, using seed 42. The same groups appear in all four languages: 80 aligned
-inputs, built from 80 distinct source sentence IDs. Grouping preserves sentence
-order but is not guaranteed to produce a coherent single article.
+`pilot.json` uses a frozen, curated selection of 20 non-overlapping passages,
+each containing four consecutive FLORES dev entries from one source article.
+The same IDs appear in all four languages: 80 aligned inputs from 80 distinct
+source sentence IDs. English/Kazakh passages were reviewed for topical continuity
+and a clear opening subject. This is a purposive sample, not a random or representative
+sample of FLORES; source translations and wording remain unchanged.
 
-With 12 machine configurations and three repetitions, the aligned experiment
-has **2,880 measured requests**, plus warm-ups. This is a runtime/noise pilot;
-it is not a justified statistical sample size for the final paper.
+With 12 machine configurations and one repetition, the initial aligned experiment
+has **960 measured requests** (48 per prompt group). Matched token-prefix workloads
+are disabled for this phase. Results are saved per request and groups run in order;
+see [running and resuming](running-and-resuming.md).
 
-Matched prefixes of 64 and 128 tokens add up to 5,760 more requests, depending
-on eligibility. A group is retained at a matched length only if **all four languages**
-have enough tokens. The recorded cases determine actual counts. If no groups are
-eligible, that length has no evidence; do not infer a null result from missing data.
+This is an exploratory characterization, not a statistically justified final sample
+size. Later controlled workloads can use matched 64/128-token prefixes, retaining a
+group only if every language has enough tokens. Repeated trials will be necessary
+for uncertainty estimates and stable claims about configuration differences.
 
 ## What is controlled
 
@@ -30,7 +33,7 @@ eligible, that length has no evidence; do not infer a null result from missing d
 - CPU threads for both prefill and decode; GPU layers swept explicitly.
 - One server slot, sequential requests, no prompt cache reuse, no context shifting.
 - Greedy generation, fixed seed, 64 generated tokens, EOS ignored for the controlled test.
-- Configuration order and trial order randomized with the recorded seed.
+- Configuration and language order randomized within each prompt with the recorded seed.
 - At least one unmeasured warm-up request per configuration.
 
 Inputs are bare FLORES text as model token IDs, not chat-template conversations.

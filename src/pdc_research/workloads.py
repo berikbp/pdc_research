@@ -1,10 +1,50 @@
 """Construct aligned groups without downloading or silently replacing source data."""
 
+import csv
 import random
 from collections.abc import Callable
 from pathlib import Path
 
-from .common import append_row, sha256, write_json
+from .common import append_row, read_json, sha256, write_json
+
+
+def _select_groups(experiment: dict, source: Path, size: int) -> tuple[list[dict], dict]:
+    width, count = experiment["sentences_per_group"], experiment["groups"]
+    if not experiment.get("selection_file"):
+        blocks = list(range(0, size - width + 1, width))
+        if count > len(blocks):
+            raise ValueError(f"Requested {count} non-overlapping groups; only {len(blocks)} available")
+        starts = random.Random(experiment["seed"]).sample(blocks, count)
+        return [{"sentence_ids": list(range(start + 1, start + width + 1))} for start in starts], {}
+
+    selection_path = Path(experiment["selection_file"])
+    selection = read_json(selection_path)
+    if selection["split"] != experiment["split"] or len(selection["groups"]) != count:
+        raise ValueError("Frozen selection must match the experiment split and group count")
+    metadata_path = source / f"metadata_{experiment['split']}.tsv"
+    with metadata_path.open(encoding="utf-8", newline="") as stream:
+        metadata = list(csv.DictReader(stream, delimiter="\t"))
+    if len(metadata) != size:
+        raise ValueError("FLORES metadata and sentence files must have equal row counts")
+    used = set()
+    articles = set()
+    for group in selection["groups"]:
+        ids = group["sentence_ids"]
+        if (len(ids) != width or any(type(index) is not int or not 1 <= index <= size for index in ids)
+                or ids != list(range(ids[0], ids[0] + width))):
+            raise ValueError("Each selected passage must contain consecutive in-range sentence IDs")
+        if used.intersection(ids):
+            raise ValueError("Selected passages must not overlap")
+        used.update(ids)
+        urls = {metadata[index - 1]["URL"] for index in ids}
+        if len(urls) != 1 or group["source_url"] not in urls:
+            raise ValueError("Selected passage crosses an article boundary or has the wrong source URL")
+        if group["source_url"] in articles:
+            raise ValueError("Select one passage per source article")
+        articles.add(group["source_url"])
+    return selection["groups"], {
+        "selection_sha256": sha256(selection_path), "metadata_sha256": sha256(metadata_path),
+    }
 
 
 def prepare(experiment: dict, source: str | Path, output: str | Path) -> None:
@@ -20,22 +60,18 @@ def prepare(experiment: dict, source: str | Path, output: str | Path) -> None:
     width, count = experiment["sentences_per_group"], experiment["groups"]
     if width < 1 or count < 1:
         raise ValueError("groups and sentences_per_group must be positive")
-    # Consecutive blocks preserve local order; random sample selects identical IDs for every language.
-    blocks = list(range(0, next(iter(sizes)) - width + 1, width))
-    if count > len(blocks):
-        raise ValueError(f"Requested {count} non-overlapping groups; only {len(blocks)} available")
-    starts = random.Random(experiment["seed"]).sample(blocks, count)
+    groups, provenance = _select_groups(experiment, Path(source), next(iter(sizes)))
     Path(output).parent.mkdir(parents=True, exist_ok=True)
     with Path(output).open("x", encoding="utf-8") as stream:
-        for start in starts:
-            ids = list(range(start + 1, start + width + 1))
+        for group in groups:
+            ids = group["sentence_ids"]
             for lang in languages:
-                append_row(stream, {"group_id": f"{experiment['split']}-{start + 1:04d}",
-                                    "sentence_ids": ids, "language": lang, "split": experiment["split"],
-                                    "text": "\n".join(texts[lang][start:start + width])})
+                append_row(stream, {**group, "group_id": f"{experiment['split']}-{ids[0]:04d}",
+                                    "language": lang, "split": experiment["split"],
+                                    "text": "\n".join(texts[lang][index - 1] for index in ids)})
     write_json(str(output) + ".meta.json", {"experiment": experiment,
                "source_sha256": {lang: sha256(path) for lang, path in sources.items()},
-               "manifest_sha256": sha256(output), "rows": count * len(languages)})
+               "manifest_sha256": sha256(output), "rows": count * len(languages), **provenance})
 
 
 def make_cases(rows: list[dict], experiment: dict, tokenize: Callable[[str], list[int]]) -> list[dict]:

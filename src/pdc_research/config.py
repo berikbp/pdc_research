@@ -52,6 +52,10 @@ def validate_experiment(experiment: dict) -> None:
                            "output_tokens", "matched_tokens", "synthetic_prompt_tokens"), "Experiment")
     if experiment["split"] not in ("dev", "devtest"):
         raise ValueError("split must be dev or devtest")
+    if "selection_file" in experiment and (
+        not isinstance(experiment["selection_file"], str) or not experiment["selection_file"].strip()
+    ):
+        raise ValueError("selection_file must be a nonempty path string")
     languages = experiment["languages"]
     if (not isinstance(languages, list) or not languages
             or any(not isinstance(lang, str) or not lang.replace("_", "").isalnum() for lang in languages)
