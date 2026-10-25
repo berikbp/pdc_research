@@ -170,6 +170,9 @@ def read_status(root: str | Path) -> dict:
     fingerprint = metadata.get("fingerprint", {})
     if fingerprint.get("schema_version") != 2:
         raise ValueError("Unsupported run format")
+    if fingerprint.get("execution_order") == "controlled-rounds-v1":
+        from .controlled import read_controlled_status
+        return read_controlled_status(root)
     previous = read_json(root / "status.json") if (root / "status.json").exists() else {}
     if not metadata.get("cases_sha256"):
         return previous

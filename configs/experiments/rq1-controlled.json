@@ -1,0 +1,77 @@
+{
+  "experiment_id": "rq1-controlled-64-v1",
+  "selection_file": "configs/workloads/coherent-dev-v1.json",
+  "split": "dev",
+  "languages": [
+    "eng_Latn",
+    "rus_Cyrl",
+    "kaz_Cyrl",
+    "zho_Hans"
+  ],
+  "groups": 20,
+  "sentences_per_group": 4,
+  "seed": 42,
+  "repetitions": 3,
+  "warmups": 1,
+  "output_tokens": 64,
+  "matched_tokens": [
+    64
+  ],
+  "synthetic_prompt_tokens": [
+    64,
+    128,
+    256,
+    512
+  ],
+  "execution_order": "configuration-first",
+  "configurations": [
+    {
+      "id": "gpu-model-only",
+      "threads": 1,
+      "gpu_layers": 99,
+      "tensor_overrides": [
+        "token_embd.weight=CUDA0"
+      ]
+    },
+    {
+      "id": "g99-t1",
+      "threads": 1,
+      "gpu_layers": 99
+    },
+    {
+      "id": "g99-t4",
+      "threads": 4,
+      "gpu_layers": 99
+    },
+    {
+      "id": "g99-t8",
+      "threads": 8,
+      "gpu_layers": 99
+    },
+    {
+      "id": "g99-t16",
+      "threads": 16,
+      "gpu_layers": 99
+    },
+    {
+      "id": "g28-t4",
+      "threads": 4,
+      "gpu_layers": 28
+    },
+    {
+      "id": "g28-t8",
+      "threads": 8,
+      "gpu_layers": 28
+    },
+    {
+      "id": "g24-t4",
+      "threads": 4,
+      "gpu_layers": 24
+    },
+    {
+      "id": "g24-t8",
+      "threads": 8,
+      "gpu_layers": 24
+    }
+  ]
+}

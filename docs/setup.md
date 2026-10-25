@@ -11,7 +11,7 @@ Install Python 3.12 or newer and [uv](https://docs.astral.sh/uv/getting-started/
 
 ```bash
 uv sync --locked
-uv run pdc-research doctor --output runs/my-machine/hardware.json
+uv run pdc-research doctor --output runs/my-machine-hardware.json
 ```
 
 Without uv, use `python -m venv .venv`, activate it, and run `python -m pip install -e .`.
@@ -87,7 +87,7 @@ are resumable; model files and metadata remain under ignored `models/` and `data
 Use `--only model` or `--only dataset` for a single asset. Keep the shards until
 the merged model is verified; this workflow uses roughly 9.4 GB for model assets.
 
-The provisional shared model is **Qwen2.5-7B-Instruct, Q4_K_M**, a dense model with
+The shared model used in the reported experiments is **Qwen2.5-7B-Instruct, Q4_K_M**, a dense model with
 28 transformer layers. This is an execution benchmark, not an evaluation of its
 Kazakh generation quality. Validate the model choice during the pilot.
 
@@ -150,8 +150,9 @@ Configurations that do not fit are failures, not slow successful trials.
 uv run pdc-research plan --machine configs/machines/berik-wsl.json
 ```
 
-Before the whole pilot, run the provided smoke experiment: one group, one repetition,
-one thread count, and GPU settings `[0, 99]`.
+Before the whole pilot, run the provided smoke experiment: one frozen coherent group,
+one repetition, 16 output tokens, one thread count and GPU settings `[0, 99]`.
+Use a reduced copy of your own profile for the smoke run.
 
 ```bash
 uv run pdc-research prepare --experiment configs/experiments/smoke.json --source data/raw/flores200_dataset --output data/workloads/smoke.jsonl
@@ -203,3 +204,38 @@ uv run python -m unittest discover -s tests -v
 
 Tests use tiny artificial files and mocked responses. They do not download models
 or claim to validate GPU inference.
+
+## 7. Replicate the controlled RQ1 experiment
+
+The earlier commands document the exploratory pilot. The current controlled
+protocol and its nine settings are in [rq1-controlled.md](rq1-controlled.md).
+After preparing `data/workloads/pilot-v3.jsonl`, run:
+
+```bash
+uv run pdc-research plan --machine configs/machines/NAME.local.json --experiment configs/experiments/rq1-controlled.json
+uv run pdc-research run-controlled --machine configs/machines/NAME.local.json --experiment configs/experiments/rq1-controlled.json --output runs/NAME-rq1-001
+uv run pdc-research status --output runs/NAME-rq1-001
+uv run pdc-research analyze-controlled --run runs/NAME-rq1-001 --output runs/NAME-rq1-001/analysis
+```
+
+Use your own profile, not Berik's hardware metadata. The controlled matrix overrides
+its thread/layer lists with the nine explicit entries in the experiment config.
+The planner reports an upper bound before tokenization; the historical model and
+manifest yield 19 eligible groups, 76 inputs and 2,052 requests. The current
+64-token protocol explicitly checks that eligibility and refuses a changed
+sample. Investigate tokenizer/model differences rather than weakening that check
+silently. The GPU-only entry explicitly names CUDA0; other backends require new
+placement verification. Settings that do not fit VRAM must be reported as failures.
+
+Append `--resume` to the same `run-controlled` command after interruption. Creating
+`runs/NAME-rq1-001/STOP` pauses after the current request is saved. No command
+schedules shutdown. The code can run in your terminal; systemd is not required.
+
+`doctor --output runs/NAME-hardware.json` should be outside the future run folder,
+which must not already exist when starting a new experiment. A plain `status`
+reports the last saved phase and reconstructs committed results; it does not
+prove that a process is live.
+
+For sharing, commit your reviewed report and small summary tables. Keep raw JSON,
+model generations, logs and per-request CSV exports in ignored `runs/`. Copy the
+whole run directory to a separate backup if it is needed for research verification.

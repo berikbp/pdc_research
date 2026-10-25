@@ -1,0 +1,34 @@
+{
+  "berik-pilot-v3": {
+    "count": 960,
+    "started_utc": "2026-10-14T14:47:35.398956+00:00",
+    "errors": 0,
+    "records_sha256": "b6818f4b667980ef8496ac4029e765097cf134650d6ef85c4dc43fcc3a00c2df",
+    "model_sha256": "1875fb29e8c91c86615c00e92d8b4114e56bc24359adb5a8db8b36452fae4a49",
+    "server_sha256": "9c3e38698b830ed4570ce23ae627feb329402c39879c1c5ef095ab4dfd1d3811"
+  },
+  "berik-cpu-threads-v1": {
+    "count": 1680,
+    "started_utc": "2026-10-17T11:35:49.454112+00:00",
+    "errors": 0,
+    "records_sha256": "a0090491a1d711ff7e7413f093990bba77af8dba5f9c10d8a977924f2a7a9643",
+    "model_sha256": "1875fb29e8c91c86615c00e92d8b4114e56bc24359adb5a8db8b36452fae4a49",
+    "server_sha256": "9c3e38698b830ed4570ce23ae627feb329402c39879c1c5ef095ab4dfd1d3811"
+  },
+  "berik-cpu-threads-10-v1": {
+    "count": 240,
+    "started_utc": "2026-10-17T14:01:37.818560+00:00",
+    "errors": 0,
+    "records_sha256": "82bc810fd0c039354925f2d5d8259706f1c41798766ee75f93f419a2bf220d0c",
+    "model_sha256": "1875fb29e8c91c86615c00e92d8b4114e56bc24359adb5a8db8b36452fae4a49",
+    "server_sha256": "9c3e38698b830ed4570ce23ae627feb329402c39879c1c5ef095ab4dfd1d3811"
+  },
+  "berik-gpu-model-baseline-v1": {
+    "count": 240,
+    "started_utc": "2026-10-18T11:04:02.342350+00:00",
+    "errors": 0,
+    "records_sha256": "88e8cb5bbb4b8b57ec021741e91eddbd9d7ee97df9b852db0d4ea34af9bff267",
+    "model_sha256": "1875fb29e8c91c86615c00e92d8b4114e56bc24359adb5a8db8b36452fae4a49",
+    "server_sha256": "9c3e38698b830ed4570ce23ae627feb329402c39879c1c5ef095ab4dfd1d3811"
+  }
+}

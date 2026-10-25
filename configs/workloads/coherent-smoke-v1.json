@@ -1,0 +1,17 @@
+{
+  "split": "dev",
+  "selection_method": "curated single-article passages; original source text preserved",
+  "groups": [
+    {
+      "sentence_ids": [
+        369,
+        370,
+        371,
+        372
+      ],
+      "source_url": "https://en.wikibooks.org/wiki/Wikijunior:Dinosaurs/Triceratops",
+      "title_en": "Triceratops feeding",
+      "title_kk": "Трицератопстың қоректенуі"
+    }
+  ]
+}

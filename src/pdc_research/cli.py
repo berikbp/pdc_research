@@ -3,6 +3,7 @@
 import argparse
 import json
 import subprocess
+from pathlib import Path
 
 from .baseline import run_baseline
 from .checkpoints import read_status
@@ -10,6 +11,8 @@ from .common import write_json
 from .config import experiment_plan, load_configs, load_experiment
 from .hardware import hardware_report
 from .runner import run
+from .controlled import run_controlled
+from .analysis import analyze
 from .workloads import prepare
 
 DEFAULT_EXPERIMENT = "configs/experiments/pilot.json"
@@ -27,18 +30,22 @@ def build_parser() -> argparse.ArgumentParser:
     prep.add_argument("--experiment", default=DEFAULT_EXPERIMENT)
     prep.add_argument("--source", required=True, help="Extracted FLORES root containing dev/ and devtest/")
     prep.add_argument("--output", default=DEFAULT_MANIFEST)
-    for name in ("plan", "run", "baseline"):
+    analysis = commands.add_parser("analyze-controlled", help="Analyze a completed controlled run")
+    analysis.add_argument("--run", required=True, type=Path)
+    analysis.add_argument("--output", required=True, type=Path)
+    for name in ("plan", "run", "run-controlled", "baseline"):
         sub = commands.add_parser(name)
         sub.add_argument("--machine", required=True)
         sub.add_argument("--experiment", default=DEFAULT_EXPERIMENT)
-        if name == "run":
+        if name in ("run", "run-controlled"):
             sub.add_argument("--manifest", default=DEFAULT_MANIFEST)
             sub.add_argument("--resume", action="store_true", help="Continue an existing compatible run")
-            sub.add_argument("--stop-after-prompts", type=int, help="Pause after this many prompt groups in total")
-        if name in ("run", "baseline"):
+            if name == "run":
+                sub.add_argument("--stop-after-prompts", type=int, help="Pause after this many prompt groups in total")
+        if name in ("run", "run-controlled", "baseline"):
             sub.add_argument(
                 "--output", required=True,
-                help=("Run directory (use --resume to continue a run)" if name == "run"
+                help=("Run directory (use --resume to continue a run)" if name in ("run", "run-controlled")
                       else "New baseline directory; existing directories refused")
             )
     return parser
@@ -57,12 +64,17 @@ def dispatch(args: argparse.Namespace) -> None:
         prepare(load_experiment(args.experiment), args.source, args.output)
         print(f"Created {args.output}")
         return
+    if args.command == "analyze-controlled":
+        analyze(args.run, args.output)
+        return
     machine, experiment = load_configs(args.machine, args.experiment)
     if args.command == "plan":
         print(json.dumps(experiment_plan(machine, experiment), indent=2))
     elif args.command == "run":
         run(machine, experiment, args.manifest, args.output,
             resume=args.resume, stop_after_prompts=args.stop_after_prompts)
+    elif args.command == "run-controlled":
+        run_controlled(machine, experiment, args.manifest, args.output, resume=args.resume)
     elif args.command == "baseline":
         run_baseline(machine, experiment, args.output)
 

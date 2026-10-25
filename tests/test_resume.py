@@ -48,8 +48,9 @@ class ResumeTests(unittest.TestCase):
 
         with ExitStack() as stack:
             server_mock = stack.enter_context(patch("pdc_research.runner.server", side_effect=fake_server))
-            stack.enter_context(patch("pdc_research.runner.request", side_effect=fake_request))
-            stack.enter_context(patch("pdc_research.runner.capture", return_value={}))
+            stack.enter_context(patch("pdc_research.session.server", side_effect=fake_server))
+            stack.enter_context(patch("pdc_research.session.request", side_effect=fake_request))
+            stack.enter_context(patch("pdc_research.session.capture", return_value={}))
             completion_mock = stack.enter_context(patch(
                 "pdc_research.runner.completion", side_effect=side_effect or fake_completion
             ))

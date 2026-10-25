@@ -2,7 +2,7 @@
 
 This replaces the earlier mixed-article selection. Each passage contains four consecutive source entries from ONE article, and the same sentence IDs are used for all four languages. Selection is curated, not a random sample. Source spelling and translations are preserved unchanged. Topical coherence has been reviewed in English and Kazakh; this is not a certification of perfect translation or factual accuracy.
 
-These are text-continuation inputs for an inference benchmark, not question-answering instructions. There are 20 passages, 80 language inputs and 960 measured trials in the current plan. No benchmark has been started.
+These are text-continuation inputs for an inference benchmark, not question-answering instructions. There are 20 passages, 80 language inputs and 960 measured trials in the current plan. The reported pilot used these passages; see [the current report](current-report.md).
 
 Selection: `configs/workloads/coherent-dev-v1.json`. Source: https://github.com/facebookresearch/flores/blob/main/flores200/README.md
 

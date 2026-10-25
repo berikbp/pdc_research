@@ -37,6 +37,13 @@ def validate_machine(machine: dict) -> None:
             raise ValueError(f"{field} must be a nonempty string")
     _integer_choices(machine["threads"], "threads")
     _integer_choices(machine["gpu_layers"], "gpu_layers", minimum=0)
+    overrides = machine.get("tensor_overrides", [])
+    if not isinstance(overrides, list) or any(
+        not isinstance(value, str) or "=" not in value
+        or not all(part.strip() for part in value.split("=", 1))
+        for value in overrides
+    ):
+        raise ValueError("tensor_overrides must contain tensor-pattern=buffer strings")
     for field in ("context_size", "batch_size", "ubatch_size", "port",
                   "startup_timeout_seconds", "request_timeout_seconds"):
         _positive_integer(machine[field], field)
@@ -56,6 +63,24 @@ def validate_experiment(experiment: dict) -> None:
         not isinstance(experiment["selection_file"], str) or not experiment["selection_file"].strip()
     ):
         raise ValueError("selection_file must be a nonempty path string")
+    if experiment.get("execution_order", "prompt-first") not in ("prompt-first", "configuration-first"):
+        raise ValueError("Invalid execution_order")
+    if "configurations" in experiment:
+        configs = experiment["configurations"]
+        if not isinstance(configs, list) or not configs:
+            raise ValueError("configurations must be a nonempty list")
+        ids = []
+        for cfg in configs:
+            if not isinstance(cfg, dict):
+                raise ValueError("Each configuration must be an object")
+            cid = cfg.get("id")
+            if not isinstance(cid, str) or not cid or not cid.replace("-", "").isascii() or not cid.replace("-", "").isalnum():
+                raise ValueError("Configuration IDs must be safe nonempty names")
+            ids.append(cid)
+            _positive_integer(cfg.get("threads"), "configuration threads")
+            _positive_integer(cfg.get("gpu_layers"), "configuration gpu_layers", minimum=0)
+        if len(ids) != len(set(ids)):
+            raise ValueError("Configuration IDs must be unique")
     languages = experiment["languages"]
     if (not isinstance(languages, list) or not languages
             or any(not isinstance(lang, str) or not lang.replace("_", "").isalnum() for lang in languages)
@@ -90,6 +115,16 @@ def configurations(machine: dict, seed: int) -> list[tuple[int, int]]:
 
 
 def experiment_plan(machine: dict, experiment: dict) -> dict:
+    if "configurations" in experiment:
+        count = len(experiment["configurations"])
+        return {
+            "machine": machine, "experiment": experiment,
+            "configurations": count, "rounds": experiment["repetitions"],
+            "configuration_loads": count * experiment["repetitions"],
+            "candidate_groups": experiment["groups"],
+            "max_measured_requests": count * experiment["groups"] * len(experiment["languages"]) * experiment["repetitions"],
+            "note": "Use run-controlled. Actual budget depends on all-language token-length eligibility; historical run: 19 groups, 2052 requests.",
+        }
     count = len(configurations(machine, experiment["seed"]))
     inputs = experiment["groups"] * len(experiment["languages"])
     return {

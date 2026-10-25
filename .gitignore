@@ -40,3 +40,14 @@ Desktop.ini
 *.swp
 *.swo
 *~
+
+# Local analysis exports and scratch output (curated report tables stay versioned)
+/logs/
+/artifacts/
+/.uv-cache/
+.ipynb_checkpoints/
+/docs/results/**/trials.csv
+
+# Large model files accidentally downloaded outside models/
+*.gguf
+*.gguf.part

@@ -1,0 +1,26 @@
+{
+  "machine_id": "berik-7435hs-rtx4060-wsl",
+  "model": "models/qwen2.5-7b-instruct-q4_k_m.gguf",
+  "llama_bin": "vendor/llama.cpp/build/bin",
+  "threads": [
+    10
+  ],
+  "gpu_layers": [
+    99
+  ],
+  "context_size": 2048,
+  "batch_size": 512,
+  "ubatch_size": 128,
+  "port": 8080,
+  "startup_timeout_seconds": 180,
+  "request_timeout_seconds": 600,
+  "reported_hardware": {
+    "cpu": "AMD Ryzen 7 7435HS, 8 cores / 16 logical CPUs",
+    "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "vram_mib": 8188,
+    "wsl_visible_ram": "approximately 11 GiB",
+    "driver": "591.66 (user-reported nvidia-smi)",
+    "driver_cuda_compatibility": "13.1; not a CUDA toolkit installation check"
+  },
+  "notes": "Full GPU offload; 10 CPU software threads; follow-up session, no core affinity."
+}

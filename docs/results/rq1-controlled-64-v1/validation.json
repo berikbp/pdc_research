@@ -1,0 +1,17 @@
+{
+  "validated_trials": 2052,
+  "passage_clusters": 19,
+  "rounds": 3,
+  "blocks": 27,
+  "errors": 0,
+  "records_sha256": "711ea465b57d0387c9ec71bc0ec229f992345ce3b6a03376ef12ebc645456dd2",
+  "bootstrap_samples": 10000,
+  "bootstrap_seed": 20261025,
+  "interaction_family_size": 216,
+  "relative_family_size": 32,
+  "interaction_simultaneous_nonzero": 1,
+  "interaction_intervals_inside_2pp": 201,
+  "stable_practical_interactions": 0,
+  "max_abs_interaction_pp": 0.8464934366726791,
+  "max_simultaneous_interaction_bound_pp": 3.7682344927911577
+}

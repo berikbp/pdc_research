@@ -1,4 +1,12 @@
-# Prompt-first benchmark: 20 × 4 × 12 = 960 measured requests
+# Running and resuming
+
+For the current controlled experiment, use `pdc-research run-controlled` with
+`configs/experiments/rq1-controlled.json`; see [its protocol](rq1-controlled.md).
+`pdc-research status --output RUN` supports both layouts. STOP and explicit
+resume work in both; prompt-boundary stop limits apply only to prompt-first runs.
+The examples below describe the historical prompt-first pilot.
+
+## Historical pilot: 20 × 4 × 12 = 960 measured requests
 
 The revised pilot uses one repetition, 20 aligned FLORES groups, four languages,
 and 12 CPU–GPU configurations. It generates 64 output tokens per measured request.
@@ -92,5 +100,6 @@ preparation history; they are no longer the active workload. The frozen passage
 list and article URLs are in `configs/workloads/coherent-dev-v1.json`.
 Schema-1 run directories cannot be resumed by the new runner.
 
-The initial one-repetition experiment is exploratory. Repeated trials and a
-separate matched-length phase are still needed before robust conclusions about RQ1.
+The initial one-repetition experiment was exploratory. Repeated trials and the
+controlled phase have since been completed on the initial laptop; see the
+[current report](current-report.md) for their restricted conclusions.

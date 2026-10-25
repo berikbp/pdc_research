@@ -21,7 +21,7 @@ def binary(machine: dict, name: str) -> str:
 
 
 def server_command(machine: dict, threads: int, layers: int) -> list[str]:
-    return [
+    command = [
         binary(machine, "llama-server"),
         "-m", machine["model"],
         "-t", str(threads),
@@ -39,6 +39,9 @@ def server_command(machine: dict, threads: int, layers: int) -> list[str]:
         "-ctk", "f16",
         "-ctv", "f16",
     ]
+    for override in machine.get("tensor_overrides", []):
+        command.extend(["-ot", override])
+    return command
 
 
 @contextmanager

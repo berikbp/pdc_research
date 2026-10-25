@@ -6,7 +6,7 @@ The pinned llama.cpp tools were built successfully for Berik's WSL laptop.
 - Release build with GNU 15.2.0, project-local CUDA 13.1.80, architecture `89`.
 - Tools: `llama-server`, `llama-bench`, `llama-gguf-split` under `vendor/llama.cpp/build/bin/`.
 - Server device check: NVIDIA GeForce RTX 4060 Laptop GPU, approximately 8 GiB VRAM.
-- Five Python pipeline tests passed.
+- Historical initial build check passed; the current test suite is documented in development notes.
 
 Build reproduction:
 
@@ -24,4 +24,6 @@ alongside this build because its shared libraries are used at runtime.
 
 No model inference or FLORES performance results were collected during this build.
 The subsequent asset setup downloaded and verified the pinned model and FLORES-200,
-and prepared both workload manifests. Next: run the documented smoke experiment.
+and prepared the workload manifests. The pilot and subsequent experiments are now
+complete; see [the current report](current-report.md). This page records only the
+initial native build, not current experiment progress.

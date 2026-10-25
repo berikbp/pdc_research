@@ -79,10 +79,11 @@ class MeasurementTests(unittest.TestCase):
                        "gpu_layers": [0], "context_size": 20, "request_timeout_seconds": 1}
             experiment = {"languages": ["en"], "repetitions": 2, "warmups": 1,
                           "output_tokens": 2, "seed": 42, "matched_tokens": [2, 8]}
-            with patch("pdc_research.runner.server", fake_server), \
-                 patch("pdc_research.runner.request", fake_request), \
+            with patch("pdc_research.session.server", fake_server), \
+                 patch("pdc_research.runner.server", fake_server), \
+                 patch("pdc_research.session.request", fake_request), \
                  patch("pdc_research.backend.request", fake_request), \
-                 patch("pdc_research.runner.capture", return_value={}):
+                 patch("pdc_research.session.capture", return_value={}):
                 run(machine, experiment, manifest, root / "result")
                 trials = [json.loads(p.read_text()) for p in (root / "result/prompts/001/results").glob("*.json")]
                 self.assertEqual(len(trials), 4)  # Two modes x two repetitions; warm-up excluded.

@@ -1,4 +1,9 @@
-# Experiment protocol and remaining stages
+# Experiment design and historical pilot protocol
+
+The pilot and controlled 64-token experiment are complete on the initial laptop.
+See [the current report](current-report.md) for results and limitations and
+[the controlled protocol](rq1-controlled.md) for teammate replication. The pilot
+budget below is historical; it is not a pending new run.
 
 ## Current question
 
@@ -54,7 +59,7 @@ results serve as the length-aware hardware baseline rather than proof of languag
 
 ## Next stages
 
-1. Run smoke and pilot on Berik's laptop; validate timings, cache assertions, offload
+1. The initial laptop pilot is complete. For teammate replication validate timings, cache assertions, offload
    logs, actual sample counts, and runtime. Test teammate setup independently.
 2. Add process/GPU telemetry and streaming TTFT if reliable on each OS/backend.
 3. Freeze the main study's prompt budget and length strata using pilot variance
