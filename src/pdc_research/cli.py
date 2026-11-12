@@ -13,6 +13,7 @@ from .hardware import hardware_report
 from .runner import run
 from .controlled import run_controlled
 from .analysis import analyze
+from .thread_analysis import analyze_thread_sweep
 from .workloads import prepare
 
 DEFAULT_EXPERIMENT = "configs/experiments/pilot.json"
@@ -33,6 +34,9 @@ def build_parser() -> argparse.ArgumentParser:
     analysis = commands.add_parser("analyze-controlled", help="Analyze a completed controlled run")
     analysis.add_argument("--run", required=True, type=Path)
     analysis.add_argument("--output", required=True, type=Path)
+    thread_analysis = commands.add_parser("analyze-thread-sweep", help="Analyze an aligned round-based thread sweep")
+    thread_analysis.add_argument("--run", required=True, type=Path)
+    thread_analysis.add_argument("--output", required=True, type=Path)
     for name in ("plan", "run", "run-controlled", "baseline"):
         sub = commands.add_parser(name)
         sub.add_argument("--machine", required=True)
@@ -66,6 +70,9 @@ def dispatch(args: argparse.Namespace) -> None:
         return
     if args.command == "analyze-controlled":
         analyze(args.run, args.output)
+        return
+    if args.command == "analyze-thread-sweep":
+        analyze_thread_sweep(args.run, args.output)
         return
     machine, experiment = load_configs(args.machine, args.experiment)
     if args.command == "plan":

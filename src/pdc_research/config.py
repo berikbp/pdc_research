@@ -81,6 +81,14 @@ def validate_experiment(experiment: dict) -> None:
             _positive_integer(cfg.get("gpu_layers"), "configuration gpu_layers", minimum=0)
         if len(ids) != len(set(ids)):
             raise ValueError("Configuration IDs must be unique")
+    mode = experiment.get("input_mode", "matched-64")
+    if mode != "aligned" and mode not in [f"matched-{n}" for n in experiment["matched_tokens"]]:
+        if "input_mode" in experiment:
+            raise ValueError("input_mode must be aligned or a configured matched length")
+    if "expected_groups" in experiment:
+        _positive_integer(experiment["expected_groups"], "expected_groups")
+        if experiment["expected_groups"] > experiment["groups"]:
+            raise ValueError("expected_groups cannot exceed groups")
     languages = experiment["languages"]
     if (not isinstance(languages, list) or not languages
             or any(not isinstance(lang, str) or not lang.replace("_", "").isalnum() for lang in languages)
@@ -123,7 +131,9 @@ def experiment_plan(machine: dict, experiment: dict) -> dict:
             "configuration_loads": count * experiment["repetitions"],
             "candidate_groups": experiment["groups"],
             "max_measured_requests": count * experiment["groups"] * len(experiment["languages"]) * experiment["repetitions"],
-            "note": "Use run-controlled. Actual budget depends on all-language token-length eligibility; historical run: 19 groups, 2052 requests.",
+            "expected_measured_requests": (count * experiment["expected_groups"] * len(experiment["languages"]) * experiment["repetitions"]
+                                           if "expected_groups" in experiment else None),
+            "note": "Use run-controlled. Aligned inputs keep full passages; matched-length budgets depend on all-language eligibility.",
         }
     count = len(configurations(machine, experiment["seed"]))
     inputs = experiment["groups"] * len(experiment["languages"])

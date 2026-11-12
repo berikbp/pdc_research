@@ -1,4 +1,4 @@
-"""Equal-length inference in separately shuffled rounds with durable checkpoints."""
+"""Aligned or equal-length inference in separately shuffled, resumable rounds."""
 
 import argparse
 import random
@@ -93,6 +93,23 @@ def drive(root, machine, experiment, cases, configs, checkpoints, blocks):
         raise
 
 
+def select_cases(all_cases, experiment):
+    """Select the declared workload and enforce its frozen eligibility budget."""
+    mode = experiment.get('input_mode', 'matched-64')
+    cases = [case for case in all_cases if case['mode'] == mode]
+    expected_groups = experiment.get('expected_groups',
+                                     experiment['groups'] if mode == 'aligned' else 19)
+    groups = {case['group_id'] for case in cases}
+    expected_count = expected_groups * len(experiment['languages'])
+    if len(groups) != expected_groups or len(cases) != expected_count:
+        raise ValueError(f'Expected {expected_groups} groups / {expected_count} inputs for {mode}')
+    if mode != 'aligned':
+        length = int(mode.removeprefix('matched-'))
+        if any(len(case['tokens']) != length for case in cases):
+            raise ValueError('Selected token lengths differ from declared matched mode')
+    return cases
+
+
 def run_controlled(machine, experiment, manifest, output, *, resume=False):
     if not experiment.get('configurations'):
         raise ValueError('run-controlled requires an explicit configuration matrix')
@@ -103,8 +120,9 @@ def run_controlled(machine, experiment, manifest, output, *, resume=False):
     for cfg in configs:
         validate_machine({**machine, 'threads': [cfg['threads']], 'gpu_layers': [cfg['gpu_layers']],
                           'tensor_overrides': cfg.get('tensor_overrides', [])})
-    if experiment['matched_tokens'] != [64] or experiment['output_tokens'] != 64:
-        raise ValueError('This protocol requires 64 input and 64 output tokens')
+    mode = experiment.get('input_mode', 'matched-64')
+    if mode != 'aligned' and mode not in [f'matched-{n}' for n in experiment['matched_tokens']]:
+        raise ValueError('Selected input mode must be included in matched_tokens')
     root = Path(output)
     if root.exists() and not resume:
         raise FileExistsError('Output exists; pass --resume')
@@ -123,10 +141,7 @@ def run_controlled(machine, experiment, manifest, output, *, resume=False):
         initialize_run(root, identity, rows, executable, resume)
         atomic_json(root / 'status.json', {'phase': 'preparing', 'finished': False})
         all_cases = prepare_cases(root, machine, experiment, rows)
-        cases = [c for c in all_cases if c['mode'] == 'matched-64']
-        groups = {c['group_id'] for c in cases}
-        if len(cases) != 76 or len(groups) != 19 or any(len(c['tokens']) != 64 for c in cases):
-            raise ValueError('Expected exactly 19 eligible groups / 76 equal-length inputs')
+        cases = select_cases(all_cases, experiment)
         atomic_json(root / 'controlled-cases.json', cases)
         blocks = schedule(configs, experiment['repetitions'], experiment['seed'])
         atomic_json(root / 'schedule.json', blocks)
@@ -151,9 +166,10 @@ def read_controlled_status(root):
         return previous
     if sha256(root / 'cases.json') != metadata['cases_sha256']:
         raise ValueError('Saved cases checksum mismatch')
-    cases = [c for c in read_json(root / 'cases.json') if c['mode'] == 'matched-64']
     fingerprint = metadata['fingerprint']
     experiment, machine = fingerprint['experiment'], fingerprint['machine']
+    mode = experiment.get('input_mode', 'matched-64')
+    cases = [c for c in read_json(root / 'cases.json') if c['mode'] == mode]
     counts, expected = {}, 0
     for cfg in experiment['configurations']:
         runtime = {**machine, 'threads': [cfg['threads']], 'gpu_layers': [cfg['gpu_layers']]}

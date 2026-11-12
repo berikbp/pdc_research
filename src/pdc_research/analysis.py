@@ -53,6 +53,8 @@ def write_csv(path, rows):
 def analyze(root, output, samples=10000):
     meta = json.loads((root/'metadata.json').read_text())
     experiment = meta['fingerprint']['experiment']
+    if experiment.get('input_mode', 'matched-64') != 'matched-64':
+        raise ValueError('This analysis is for the matched-64 RQ1 protocol; use analyze-thread-sweep for aligned model runs')
     configs = [c['id'] for c in experiment['configurations']]
     definitions = {c['id']: c for c in experiment['configurations']}
     cases_bytes = (root/'cases.json').read_bytes()

@@ -45,12 +45,13 @@ def server_command(machine: dict, threads: int, layers: int) -> list[str]:
 
 
 @contextmanager
-def server(machine: dict, threads: int, layers: int, log: str | Path) -> Iterator[str]:
+def server(machine: dict, threads: int, layers: int, log: str | Path,
+           *, extra_args: tuple[str, ...] = ()) -> Iterator[str]:
     # Do not accidentally benchmark an unrelated process already using this port.
     with socket.socket() as sock:
         if sock.connect_ex(("127.0.0.1", machine["port"])) == 0:
             raise RuntimeError(f"Port {machine['port']} already in use; stop that server or change port")
-    command = server_command(machine, threads, layers)
+    command = [*server_command(machine, threads, layers), *extra_args]
     base = f"http://127.0.0.1:{machine['port']}"
     with Path(log).open("w", encoding="utf-8") as stream:
         stream.write(json.dumps(command) + "\n")

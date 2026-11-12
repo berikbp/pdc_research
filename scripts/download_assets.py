@@ -47,6 +47,20 @@ def prepare_model(config: dict) -> None:
         return download(f"{base}/{asset['filename']}?download=true",
                         Path("models") / asset["filename"], asset)
 
+    if len(model["files"]) == 1:
+        asset = model["files"][0]
+        if asset["filename"] != model["merged_filename"]:
+            raise ValueError("Single-file model must use the source filename as merged_filename")
+        path = shard(asset)
+        record = path.with_suffix(".metadata.json")
+        if record.exists() and read_json(record).get("source") != model:
+            raise ValueError(f"Existing model has different provenance: {path}")
+        write_json(record, {"source": model, "merged_sha256": asset["sha256"],
+                           "merged_bytes": path.stat().st_size, "format": "single-file-gguf",
+                           "completed_utc": datetime.now(timezone.utc).isoformat()})
+        print(f"Ready: {path}", flush=True)
+        return
+
     with ThreadPoolExecutor(max_workers=2) as executor:
         shards = list(executor.map(shard, model["files"]))
     merged = Path("models") / model["merged_filename"]
@@ -98,8 +112,9 @@ def prepare_dataset(config: dict) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--only", choices=["model", "dataset"])
+    parser.add_argument("--config", default="configs/assets.json", help="Pinned asset configuration")
     args = parser.parse_args()
-    config = read_json("configs/assets.json")
+    config = read_json(args.config)
     if args.only != "dataset":
         prepare_model(config)
     if args.only != "model":

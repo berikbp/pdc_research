@@ -1,0 +1,14 @@
+{
+  "model": {
+    "repository": "bartowski/Mistral-7B-Instruct-v0.3-GGUF",
+    "revision": "61fd4167fff3ab01ee1cfe0da183fa27a944db48",
+    "merged_filename": "Mistral-7B-Instruct-v0.3-Q4_K_M.gguf",
+    "files": [
+      {
+        "filename": "Mistral-7B-Instruct-v0.3-Q4_K_M.gguf",
+        "size_bytes": 4372812000,
+        "sha256": "1270d22c0fbb3d092fb725d4d96c457b7b687a5f5a715abe1e818da303e562b6"
+      }
+    ]
+  }
+}

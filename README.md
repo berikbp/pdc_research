@@ -12,6 +12,13 @@ Read the **[current full report](docs/current-report.md)** for all three stages,
 the CPU-thread detour, corrected GPU-only baseline, tables and limitations.
 The original [research proposal](Research_Proposal.md) remains the source of RQ1/RQ2.
 
+A separate [model/thread investigation](docs/model-thread-extension.md) now extends
+the Stage-2 characterization to Qwen2.5-3B. Its scope and shuffled-round protocol
+are distinct from the original controlled RQ1 experiment.
+
+For the supervisor meeting, use the [presentation package](docs/presentation/README.md):
+editable PowerPoint, slide PDF, one-page summary and speaker notes.
+
 ## For teammates
 
 1. Follow [setup](docs/setup.md) to install Python tooling, build the pinned

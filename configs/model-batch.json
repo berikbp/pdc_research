@@ -1,0 +1,21 @@
+{
+  "batch_id": "additional-models-v1",
+  "experiment": "configs/experiments/model-thread-comparison.json",
+  "manifest": "data/workloads/pilot-v3.jsonl",
+  "models": [
+    {
+      "id": "qwen15b",
+      "assets": "configs/assets-qwen15b.json",
+      "machine": "configs/machines/berik-qwen15b.json",
+      "output": "runs/berik-qwen15b-threads-v1",
+      "pipeline": "runs/qwen15b-thread-pipeline-v1"
+    },
+    {
+      "id": "mistral7b",
+      "assets": "configs/assets-mistral7b.json",
+      "machine": "configs/machines/berik-mistral7b.json",
+      "output": "runs/berik-mistral7b-threads-v1",
+      "pipeline": "runs/mistral7b-thread-pipeline-v1"
+    }
+  ]
+}
