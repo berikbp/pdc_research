@@ -54,6 +54,9 @@ class ControlledTests(unittest.TestCase):
                 drive(root, machine, experiment, cases, configs, cp, blocks)
                 status = json.loads((root/'status.json').read_text())
                 self.assertEqual(status['successful'], 12)
+                # Without a real server process each result still states why telemetry is absent.
+                self.assertTrue(all(r['telemetry'] == {'error': 'no server process recorded; telemetry skipped'}
+                                    for c in cp.values() for r in c.successes.values()))
                 self.assertTrue(status['finished'])
                 self.assertEqual(len(loads), 7)  # Interrupted block reloaded, six completed blocks.
                 self.assertEqual(sum(bool(c[0]) for c in loads), 3)

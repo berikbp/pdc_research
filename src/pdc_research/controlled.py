@@ -10,6 +10,7 @@ from .backend import binary, completion, server
 from .checkpoints import Checkpoints, atomic_json, run_lock
 from .common import load_rows, sha256
 from .config import load_configs, validate_machine
+from .telemetry import sampler
 from .session import build_fingerprint, initialize_run, prepare_cases, check_stop, StopRequested
 
 
@@ -56,7 +57,7 @@ def drive(root, machine, experiment, cases, configs, checkpoints, blocks):
             log = cp.root / 'logs' / f'round-{repetition + 1}-{uuid.uuid4().hex}.log'
             log.parent.mkdir(parents=True, exist_ok=True)
             started = time.perf_counter()
-            with server(runtime, threads, layers, log) as base:
+            with server(runtime, threads, layers, log) as base, sampler(log) as probe:
                 startup_ms = (time.perf_counter() - started) * 1000
                 first = pending[0][1]
                 warmup = case_map[first['group_id'], first['language'], first['mode']]
@@ -70,6 +71,7 @@ def drive(root, machine, experiment, cases, configs, checkpoints, blocks):
                               'round': repetition + 1, 'tensor_overrides': runtime['tensor_overrides'],
                               'server_startup_ms': startup_ms,
                               'server_log': str(log.relative_to(cp.root))}
+                    mark = probe.mark()
                     try:
                         response, elapsed = completion(base, case['tokens'], experiment,
                                                        machine['request_timeout_seconds'])
@@ -77,7 +79,7 @@ def drive(root, machine, experiment, cases, configs, checkpoints, blocks):
                         cp.save(ordinal, {**record, 'status': 'error', 'error': str(exc)})
                         raise
                     cp.save(ordinal, {**record, 'status': 'ok', 'response': response,
-                                      'client_elapsed_ms': elapsed})
+                                      'client_elapsed_ms': elapsed, 'telemetry': probe.since(mark)})
                     cp.progress('running', ordinal)
                     status = progress('running')
                     print(f"Round {repetition + 1}, {cid}: {status['successful']}/{status['expected']}", flush=True)
@@ -134,7 +136,7 @@ def run_controlled(machine, experiment, manifest, output, *, resume=False):
     identity['execution_order'] = 'controlled-rounds-v1'
     identity['implementation_sha256'] = {
         name: sha256(Path(__file__).with_name(name))
-        for name in ['controlled.py', 'session.py', 'backend.py', 'checkpoints.py', 'workloads.py', 'config.py']
+        for name in ['controlled.py', 'session.py', 'backend.py', 'checkpoints.py', 'workloads.py', 'config.py', 'telemetry.py']
     }
     root.mkdir(parents=True, exist_ok=resume)
     with run_lock(root):

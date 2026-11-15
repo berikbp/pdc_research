@@ -9,6 +9,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from .common import request
+from .telemetry import pid_file
 
 
 def binary(machine: dict, name: str) -> str:
@@ -57,6 +58,7 @@ def server(machine: dict, threads: int, layers: int, log: str | Path,
         stream.write(json.dumps(command) + "\n")
         stream.flush()
         process = subprocess.Popen(command, stdout=stream, stderr=subprocess.STDOUT)
+        pid_file(log).write_text(str(process.pid))  # lets telemetry attribute CPU and VRAM
         try:
             deadline = time.monotonic() + machine["startup_timeout_seconds"]
             while True:
@@ -71,6 +73,7 @@ def server(machine: dict, threads: int, layers: int, log: str | Path,
                     time.sleep(0.25)
             yield base
         finally:
+            pid_file(log).unlink(missing_ok=True)
             if process.poll() is None:
                 process.terminate()
                 try:
