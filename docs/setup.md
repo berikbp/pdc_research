@@ -45,6 +45,10 @@ if binaries land in `build/bin/Release`.
 
 ### Optional project-local CUDA toolkit (Linux x86-64)
 
+Match the toolkit to the driver: `nvidia-smi` reporting `CUDA Version: 13.0` needs
+`configs/cuda-linux-13.0.txt`; the commands below use the 13.1 list from the WSL machine.
+The native Linux procedure is recorded in [local-build-status.md](local-build-status.md).
+
 If a system toolkit is unavailable, NVIDIA's wheels provide a local alternative.
 This downloads roughly 0.5 GiB and installs under ignored `vendor/`, without
 installing a display driver or requiring sudo. CUDA 13.1 requires a compatible
