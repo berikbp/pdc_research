@@ -28,6 +28,22 @@ def _required(config: dict, names: tuple[str, ...], label: str) -> None:
         raise ValueError(f"{label} configuration missing: {', '.join(missing)}")
 
 
+# Options the runner sets itself; a duplicate would silently change the declared configuration.
+RESERVED_SERVER_ARGS = frozenset({
+    "-m", "--model", "-t", "--threads", "-tb", "--threads-batch", "-ngl", "--gpu-layers",
+    "--n-gpu-layers", "-c", "--ctx-size", "-b", "--batch-size", "-ub", "--ubatch-size",
+    "--host", "--port", "-ot", "--override-tensor",
+})
+
+
+def validate_server_args(value) -> None:
+    if not isinstance(value, list) or any(not isinstance(item, str) or not item.strip() for item in value):
+        raise ValueError("server_args must be a list of nonempty strings")
+    reserved = RESERVED_SERVER_ARGS.intersection(value)
+    if reserved:
+        raise ValueError(f"server_args must not repeat runner-controlled options: {sorted(reserved)}")
+
+
 def validate_machine(machine: dict) -> None:
     _required(machine, ("machine_id", "model", "llama_bin", "threads", "gpu_layers",
                         "context_size", "batch_size", "ubatch_size", "port",
@@ -44,6 +60,7 @@ def validate_machine(machine: dict) -> None:
         for value in overrides
     ):
         raise ValueError("tensor_overrides must contain tensor-pattern=buffer strings")
+    validate_server_args(machine.get("server_args", []))
     for field in ("context_size", "batch_size", "ubatch_size", "port",
                   "startup_timeout_seconds", "request_timeout_seconds"):
         _positive_integer(machine[field], field)
@@ -79,6 +96,7 @@ def validate_experiment(experiment: dict) -> None:
             ids.append(cid)
             _positive_integer(cfg.get("threads"), "configuration threads")
             _positive_integer(cfg.get("gpu_layers"), "configuration gpu_layers", minimum=0)
+            validate_server_args(cfg.get("server_args", []))
         if len(ids) != len(set(ids)):
             raise ValueError("Configuration IDs must be unique")
     mode = experiment.get("input_mode", "matched-64")

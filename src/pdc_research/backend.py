@@ -1,6 +1,7 @@
 """llama.cpp commands, HTTP requests, and server process lifecycle."""
 
 import json
+import re
 import socket
 import subprocess
 import time
@@ -39,10 +40,36 @@ def server_command(machine: dict, threads: int, layers: int) -> list[str]:
         "-fa", "off",
         "-ctk", "f16",
         "-ctv", "f16",
+        "-lv", "4",  # trace level: the lowest that reports layer placement
     ]
     for override in machine.get("tensor_overrides", []):
         command.extend(["-ot", override])
-    return command
+    return [*command, *machine.get("server_args", [])]
+
+
+def read_placement(log: str | Path) -> dict:
+    """Actual layer placement reported by the server, not the requested -ngl value.
+
+    Only the "offloaded N/M" total is used. M counts the transformer blocks plus the
+    output layer, and llama.cpp offloads from the end: the output layer first, then the
+    last blocks, so blocks left on the CPU are the first ones. The separate "repeating
+    layers" log line is not used because it reports the same count for 28/29 and 29/29.
+    """
+    try:
+        text = Path(log).read_text(encoding="utf-8", errors="replace")
+    except OSError as exc:
+        return {"error": f"cannot read server log: {exc}"}
+    total = re.search(r"offloaded (\d+)/(\d+) layers to GPU", text)
+    if not total:
+        return {"error": "server log has no layer placement report"}
+    offloaded, layers = int(total[1]), int(total[2])
+    output_on_gpu = "offloading output layer to GPU" in text
+    if output_on_gpu != (offloaded >= 1):
+        return {"error": "server log placement lines disagree about the output layer"}
+    blocks_on_gpu = max(offloaded - 1, 0)
+    return {"offloaded_layers": offloaded, "total_layers": layers,
+            "blocks_on_gpu": blocks_on_gpu, "blocks_on_cpu": layers - 1 - blocks_on_gpu,
+            "output_layer_on_gpu": output_on_gpu}
 
 
 @contextmanager
