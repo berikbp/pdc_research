@@ -15,6 +15,7 @@ from .controlled import run_controlled
 from .analysis import analyze
 from .thread_analysis import analyze_thread_sweep
 from .layer_analysis import analyze_layer_sweep
+from .parallel import analyze_parallel, run_parallel
 from .workloads import prepare
 
 DEFAULT_EXPERIMENT = "configs/experiments/pilot.json"
@@ -41,6 +42,15 @@ def build_parser() -> argparse.ArgumentParser:
     layer_analysis = commands.add_parser("analyze-layer-sweep", help="Analyze a completed layer-offload sweep")
     layer_analysis.add_argument("--run", required=True, type=Path)
     layer_analysis.add_argument("--output", required=True, type=Path)
+    parallel_analysis = commands.add_parser("analyze-parallel", help="Analyze a completed concurrent-request run")
+    parallel_analysis.add_argument("--run", required=True, type=Path)
+    parallel_analysis.add_argument("--output", required=True, type=Path)
+    parallel = commands.add_parser("run-parallel", help="Measure concurrent requests per cell and language")
+    parallel.add_argument("--machine", required=True)
+    parallel.add_argument("--experiment", required=True)
+    parallel.add_argument("--manifest", required=True)
+    parallel.add_argument("--output", required=True)
+    parallel.add_argument("--resume", action="store_true", help="Continue an existing compatible run")
     for name in ("plan", "run", "run-controlled", "baseline"):
         sub = commands.add_parser(name)
         sub.add_argument("--machine", required=True)
@@ -80,6 +90,12 @@ def dispatch(args: argparse.Namespace) -> None:
         return
     if args.command == "analyze-layer-sweep":
         analyze_layer_sweep(args.run, args.output)
+        return
+    if args.command == "analyze-parallel":
+        analyze_parallel(args.run, args.output)
+        return
+    if args.command == "run-parallel":
+        run_parallel(args.machine, args.experiment, args.manifest, args.output, resume=args.resume)
         return
     machine, experiment = load_configs(args.machine, args.experiment)
     if args.command == "plan":

@@ -1,0 +1,82 @@
+{
+  "experiment_id": "parallel-7b-v1",
+  "seed": 42,
+  "output_tokens": 64,
+  "rounds": 2,
+  "requests_per_language": 32,
+  "threads": 8,
+  "cells": [
+    {
+      "id": "g29-np01",
+      "gpu_layers": 29,
+      "slots": 1,
+      "context_per_slot": 512,
+      "languages": [
+        "eng_Latn",
+        "rus_Cyrl",
+        "kaz_Cyrl",
+        "zho_Hans"
+      ]
+    },
+    {
+      "id": "g29-np04",
+      "gpu_layers": 29,
+      "slots": 4,
+      "context_per_slot": 512,
+      "languages": [
+        "eng_Latn",
+        "rus_Cyrl",
+        "kaz_Cyrl",
+        "zho_Hans"
+      ]
+    },
+    {
+      "id": "g29-np16",
+      "gpu_layers": 29,
+      "slots": 16,
+      "context_per_slot": 512,
+      "languages": [
+        "eng_Latn",
+        "rus_Cyrl",
+        "kaz_Cyrl",
+        "zho_Hans"
+      ]
+    },
+    {
+      "id": "g24-np01",
+      "gpu_layers": 24,
+      "slots": 1,
+      "context_per_slot": 512,
+      "languages": [
+        "eng_Latn",
+        "rus_Cyrl",
+        "kaz_Cyrl",
+        "zho_Hans"
+      ]
+    },
+    {
+      "id": "g24-np04",
+      "gpu_layers": 24,
+      "slots": 4,
+      "context_per_slot": 512,
+      "languages": [
+        "eng_Latn",
+        "rus_Cyrl",
+        "kaz_Cyrl",
+        "zho_Hans"
+      ]
+    },
+    {
+      "id": "g24-np16",
+      "gpu_layers": 24,
+      "slots": 16,
+      "context_per_slot": 512,
+      "languages": [
+        "eng_Latn",
+        "rus_Cyrl",
+        "kaz_Cyrl",
+        "zho_Hans"
+      ]
+    }
+  ]
+}

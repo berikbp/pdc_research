@@ -76,6 +76,8 @@ def main() -> None:
     parser.add_argument("--gpu-layers", required=True, type=int, nargs="+",
                         help="One value for all slot counts, or one value per slot count")
     parser.add_argument("--context-per-slot", required=True, type=int)
+    parser.add_argument("--search-down", type=int, default=0,
+                        help="If a cell fails to load, retry with one layer fewer, up to this many times")
     parser.add_argument("--output", required=True, type=Path, help="New directory for logs and probe.json")
     args = parser.parse_args()
     if len(args.gpu_layers) not in (1, len(args.slots)):
@@ -89,15 +91,19 @@ def main() -> None:
         parser.error("A requested language has no passages in the manifest")
     args.output.mkdir(parents=True, exist_ok=False)
     cells = []
-    for slots, count in zip(args.slots, layers):
-        cell = probe(machine, experiment, texts, slots, count, args.context_per_slot,
-                     args.output / f"np{slots:02d}-g{count:02d}.log")
-        cells.append(cell)
+    for slots, start in zip(args.slots, layers):
+        for count in range(start, max(start - args.search_down, 0) - 1, -1):
+            cell = probe(machine, experiment, texts, slots, count, args.context_per_slot,
+                         args.output / f"np{slots:02d}-g{count:02d}.log")
+            cells.append(cell)
+            if cell["status"] == "ok":
+                break
+        failed = [c["gpu_layers"] for c in cells if c["slots"] == slots and c["status"] != "ok"]
         summary = {language: round(values["generated_tokens_per_s"], 1)
                    for language, values in cell.get("languages", {}).items()}
         print(f"slots={slots} layers={count} {cell['status']} "
               f"vram={cell.get('server_vram_after_load')} generated tok/s={summary} "
-              f"{cell.get('error', '')}", flush=True)
+              f"failed to load at layers={failed} {cell.get('error', '')}", flush=True)
         write_json(args.output / "probe.json", {
             "machine": machine, "experiment_id": experiment["experiment_id"],
             "context_per_slot": args.context_per_slot, "cells": cells})

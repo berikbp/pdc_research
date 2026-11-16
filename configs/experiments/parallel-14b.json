@@ -1,0 +1,73 @@
+{
+  "experiment_id": "parallel-14b-v1",
+  "seed": 42,
+  "output_tokens": 64,
+  "rounds": 2,
+  "requests_per_language": 32,
+  "threads": 8,
+  "cells": [
+    {
+      "id": "c256-np01-g43",
+      "gpu_layers": 43,
+      "slots": 1,
+      "context_per_slot": 256,
+      "languages": [
+        "eng_Latn",
+        "zho_Hans"
+      ]
+    },
+    {
+      "id": "c256-np04-g42",
+      "gpu_layers": 42,
+      "slots": 4,
+      "context_per_slot": 256,
+      "languages": [
+        "eng_Latn",
+        "zho_Hans"
+      ]
+    },
+    {
+      "id": "c256-np16-g39",
+      "gpu_layers": 39,
+      "slots": 16,
+      "context_per_slot": 256,
+      "languages": [
+        "eng_Latn",
+        "zho_Hans"
+      ]
+    },
+    {
+      "id": "c512-np01-g42",
+      "gpu_layers": 42,
+      "slots": 1,
+      "context_per_slot": 512,
+      "languages": [
+        "kaz_Cyrl",
+        "rus_Cyrl",
+        "eng_Latn"
+      ]
+    },
+    {
+      "id": "c512-np04-g41",
+      "gpu_layers": 41,
+      "slots": 4,
+      "context_per_slot": 512,
+      "languages": [
+        "kaz_Cyrl",
+        "rus_Cyrl",
+        "eng_Latn"
+      ]
+    },
+    {
+      "id": "c512-np16-g36",
+      "gpu_layers": 36,
+      "slots": 16,
+      "context_per_slot": 512,
+      "languages": [
+        "kaz_Cyrl",
+        "rus_Cyrl",
+        "eng_Latn"
+      ]
+    }
+  ]
+}
