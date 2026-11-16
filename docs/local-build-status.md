@@ -25,7 +25,7 @@ alongside this build because its shared libraries are used at runtime.
 No model inference or FLORES performance results were collected during this build.
 The subsequent asset setup downloaded and verified the pinned model and FLORES-200,
 and prepared the workload manifests. The pilot and subsequent experiments are now
-complete; see [the current report](current-report.md). This page records only the
+complete; see [the current report](report-2026-10-wsl.md). This page records only the
 initial native build, not current experiment progress.
 
 ## Native Linux build (Pop!_OS 24.04, November 2026)

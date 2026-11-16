@@ -69,7 +69,7 @@ repetition identities are zero-based. Use `uv run pdc-research status --output R
 without modifying results. The saved phase does not prove a process is live.
 No automatic shutdown is configured. Keep the machine awake and plugged in.
 
-The historical run is complete. See [current results](current-report.md).
+The historical run is complete. See [current results](report-2026-10-wsl.md).
 After the repository refactor, new run fingerprints include the shared session
 module. Completed historical run metadata remains unchanged and can be analyzed;
 source-fingerprint changes intentionally prevent resuming an incompatible old run.

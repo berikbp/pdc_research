@@ -102,7 +102,7 @@ Schema-1 run directories cannot be resumed by the new runner.
 
 The initial one-repetition experiment was exploratory. Repeated trials and the
 controlled phase have since been completed on the initial laptop; see the
-[current report](current-report.md) for their restricted conclusions.
+[current report](report-2026-10-wsl.md) for their restricted conclusions.
 
 ## Telemetry
 

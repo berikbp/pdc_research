@@ -1,7 +1,7 @@
 # Experiment design and historical pilot protocol
 
 The pilot and controlled 64-token experiment are complete on the initial laptop.
-See [the current report](current-report.md) for results and limitations and
+See [the current report](report-2026-10-wsl.md) for results and limitations and
 [the controlled protocol](rq1-controlled.md) for teammate replication. The pilot
 budget below is historical; it is not a pending new run.
 

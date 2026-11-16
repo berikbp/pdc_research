@@ -37,4 +37,4 @@ One laptop (Ryzen 7 7435HS / RTX 4060 8 GiB, WSL), one model (Qwen2.5-7B-Instruc
 
 Recommended: replicate the controlled protocol on teammates’ machines, then test longer contexts if warranted. Alternatively, formally revise the question toward memory-constrained CPU–GPU cooperation. Do not build a language-aware selector unless replicated measurements show a useful signal.
 
-Evidence: docs/current-report.md and docs/results/rq1-controlled-64-v1/. Repository: github.com/berikbp/pdc_research.
+Evidence: docs/report-2026-10-wsl.md and docs/results/rq1-controlled-64-v1/. Repository: github.com/berikbp/pdc_research.
