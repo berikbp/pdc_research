@@ -8,6 +8,11 @@ where k is the number of transformer blocks the server actually left on the CPU.
 `per_cpu_block` is the extra cost of moving one block from GPU to CPU, not the
 absolute cost of a CPU block. Intervals resample passages, keeping all languages,
 configurations and rounds of a passage together.
+
+Configurations started with extra server options (for example `--device none`) run
+in a different regime; they are summarized but left out of the fit. When no
+configuration has every block on the GPU, the handoff term cannot be separated and
+`base` is an extrapolated intercept that includes it.
 """
 
 import csv
@@ -159,6 +164,8 @@ def summarize(experiment: dict, trials: list[dict]) -> list[dict]:
 
 def cost_model(trials: list[dict], metric: str, samples: int = BOOTSTRAP_SAMPLES) -> dict:
     """Fit the block cost model with passage-cluster bootstrap percentile intervals."""
+    excluded = sorted({t["configuration"] for t in trials if t["server_args"]})
+    trials = [t for t in trials if not t["server_args"]]
     placement = {t["configuration"]: (t["blocks_on_cpu"], t["output_on_gpu"]) for t in trials}
     groups = sorted({t["group"] for t in trials})
     cells: dict[tuple[str, str], list[float]] = {}
@@ -173,7 +180,8 @@ def cost_model(trials: list[dict], metric: str, samples: int = BOOTSTRAP_SAMPLES
     estimate = fit_for(groups)
     rng = random.Random(BOOTSTRAP_SEED)
     draws = [fit_for([rng.choice(groups) for _ in groups]) for _ in range(samples)]
-    return {"metric": metric, **estimate,
+    return {"metric": metric, **estimate, "excluded_configurations": excluded,
+            "full_offload_observed": any(blocks == 0 for blocks, _ in placement.values()),
             "ci95": {term: [quantile([d[term] for d in draws], .025), quantile([d[term] for d in draws], .975)]
                      for term in estimate["fitted_terms"]},
             "bootstrap_samples": samples, "bootstrap_seed": BOOTSTRAP_SEED, "passage_clusters": len(groups)}
@@ -202,7 +210,9 @@ def report(experiment: dict, rows: list[dict], models: dict) -> str:
              "## Cost of moving blocks to the CPU", "",
              "Decode time per generated token, least squares over configuration means:", "",
              "| Term | Estimate, ms | 95% interval |", "|---|---:|---:|"]
-    names = {"base_ms": "All blocks on GPU", "per_cpu_block_ms": "Each block moved to CPU",
+    base_name = ("All blocks on GPU" if decode["full_offload_observed"]
+                 else "Intercept (extrapolated, includes handoff)")
+    names = {"base_ms": base_name, "per_cpu_block_ms": "Each block moved to CPU",
              "handoff_ms": "First CPU block (fixed handoff)", "output_on_cpu_ms": "Output layer on CPU"}
     for term in decode["fitted_terms"]:
         low, high = decode["ci95"][term]
@@ -210,7 +220,13 @@ def report(experiment: dict, rows: list[dict], models: dict) -> str:
     lines += ["", f"R² = {decode['r_squared']:.4f}; largest residual {decode['max_abs_residual']:.3f} ms per token. "
               f"Prompt processing: {prefill['per_cpu_block_ms']:.3f} ms per prompt token for each block moved "
               f"to CPU (R² = {prefill['r_squared']:.4f}). Intervals are percentile bootstrap over passages and "
-              "do not cover variation between sessions.", "",
+              "do not cover variation between sessions."
+              + ("" if decode["full_offload_observed"] else
+                 " No configuration holds every block on the GPU, so the intercept is extrapolated, "
+                 "not a measured or feasible placement.")
+              + ("" if not decode["excluded_configurations"] else
+                 " Left out of the fit because extra server options change the regime: "
+                 + ", ".join(f"`{name}`" for name in decode["excluded_configurations"]) + "."), "",
               "## Configurations", "",
               "| GPU layers | Blocks on CPU | Decode, tok/s | Decode, ms/tok | Prefill, ms/tok | "
               + " | ".join(f"Total {lang}, s" for lang in languages)

@@ -10,29 +10,34 @@ TOTAL = 29  # 28 blocks + output layer
 BASE, PER_BLOCK, HANDOFF, OUTPUT = 20.0, 2.5, 1.5, 0.7
 
 
-def write_run(root: Path, layers: list[int], drop_last: bool = False) -> None:
+def write_run(root: Path, layers: list[int], drop_last: bool = False, no_gpu: bool = False) -> None:
     groups, languages = ["dev-0001", "dev-0002", "dev-0003"], ["eng_Latn", "kaz_Cyrl"]
     lengths = {"eng_Latn": 90, "kaz_Cyrl": 300}
     experiment = {"experiment_id": "synthetic", "input_mode": "aligned", "languages": languages,
                   "repetitions": 2, "output_tokens": 64,
                   "configurations": [{"id": f"g{n:02d}", "threads": 8, "gpu_layers": n} for n in layers]}
+    if no_gpu:  # a run without any GPU device is a different regime, far off the fitted line
+        experiment["configurations"].append(
+            {"id": "g00-nogpu", "threads": 8, "gpu_layers": 0, "server_args": ["--device", "none"]})
     cases = [{"group_id": g, "language": lang, "mode": "aligned", "tokens": list(range(lengths[lang]))}
              for g in groups for lang in languages]
     (root / "cases.json").write_text(json.dumps(cases))
     (root / "metadata.json").write_text(json.dumps(
         {"fingerprint": {"experiment": experiment}, "cases_sha256": sha256(root / "cases.json")}))
     records = []
-    for n in layers:
+    for definition in experiment["configurations"]:
+        n, extra = definition["gpu_layers"], definition.get("server_args", [])
         offloaded = min(n, TOTAL)
         on_cpu = TOTAL - 1 - max(offloaded - 1, 0)
         per_token = BASE + PER_BLOCK * on_cpu + HANDOFF * (on_cpu > 0) + OUTPUT * (offloaded == 0)
+        per_token += 50.0 * bool(extra)
         for index, group in enumerate(groups):
             for lang in languages:
                 for round_ in (1, 2):
                     noise = 0.01 * (index - 1) * round_
                     records.append({
-                        "configuration": f"g{n:02d}", "group_id": group, "language": lang, "round": round_,
-                        "status": "ok", "gpu_layers": n, "threads": 8, "server_args": [],
+                        "configuration": definition["id"], "group_id": group, "language": lang,
+                        "round": round_, "status": "ok", "gpu_layers": n, "threads": 8, "server_args": extra,
                         "placement": {"offloaded_layers": offloaded, "total_layers": TOTAL,
                                       "blocks_on_gpu": max(offloaded - 1, 0), "blocks_on_cpu": on_cpu,
                                       "output_layer_on_gpu": offloaded >= 1},
@@ -81,6 +86,32 @@ class LayerSweepTests(unittest.TestCase):
             report = (output / "report.md").read_text()
             self.assertIn("Each block moved to CPU", report)
             self.assertIn("Total kaz_Cyrl, s", report)
+
+    def test_other_device_regime_is_reported_but_not_fitted(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, output = Path(directory) / "run", Path(directory) / "out"
+            root.mkdir()
+            write_run(root, list(range(30)), no_gpu=True)
+            analyze_layer_sweep(root, output)
+            model = json.loads((output / "cost-model.json").read_text())["decode_ms_per_token"]
+            self.assertAlmostEqual(model["per_cpu_block_ms"], PER_BLOCK, places=2)
+            self.assertAlmostEqual(model["output_on_cpu_ms"], OUTPUT, places=2)
+            self.assertEqual(model["excluded_configurations"], ["g00-nogpu"])
+            self.assertEqual(len((output / "layers.csv").read_text().splitlines()), 32)
+            self.assertIn("`g00-nogpu`", (output / "report.md").read_text())
+
+    def test_unobserved_full_offload_is_labelled_as_extrapolation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, output = Path(directory) / "run", Path(directory) / "out"
+            root.mkdir()
+            write_run(root, [0, 1, 8, 16, 24])
+            analyze_layer_sweep(root, output)
+            model = json.loads((output / "cost-model.json").read_text())["decode_ms_per_token"]
+            self.assertFalse(model["full_offload_observed"])
+            self.assertAlmostEqual(model["base_ms"], BASE + HANDOFF, places=2)  # not separable here
+            report = (output / "report.md").read_text()
+            self.assertIn("extrapolated", report)
+            self.assertNotIn("| All blocks on GPU |", report)
 
     def test_incomplete_run_is_refused(self):
         with tempfile.TemporaryDirectory() as directory:

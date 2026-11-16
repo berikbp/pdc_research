@@ -13,6 +13,8 @@
       "handoff_ms",
       "output_on_cpu_ms"
     ],
+    "excluded_configurations": [],
+    "full_offload_observed": true,
     "ci95": {
       "base_ms": [
         19.396361040039253,
@@ -49,6 +51,8 @@
       "handoff_ms",
       "output_on_cpu_ms"
     ],
+    "excluded_configurations": [],
+    "full_offload_observed": true,
     "ci95": {
       "base_ms": [
         0.4565423931671832,
