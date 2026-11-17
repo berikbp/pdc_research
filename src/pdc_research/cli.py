@@ -16,6 +16,7 @@ from .analysis import analyze
 from .thread_analysis import analyze_thread_sweep
 from .layer_analysis import analyze_layer_sweep
 from .parallel import analyze_parallel, run_parallel
+from .serving import analyze_serving, run_serving
 from .workloads import prepare
 
 DEFAULT_EXPERIMENT = "configs/experiments/pilot.json"
@@ -51,6 +52,15 @@ def build_parser() -> argparse.ArgumentParser:
     parallel.add_argument("--manifest", required=True)
     parallel.add_argument("--output", required=True)
     parallel.add_argument("--resume", action="store_true", help="Continue an existing compatible run")
+    serve = commands.add_parser("run-serving", help="Stage 2: NEO, NEO GPU-only and vLLM under concurrent load")
+    serve.add_argument("--machine", required=True)
+    serve.add_argument("--experiment", required=True)
+    serve.add_argument("--cases", required=True, help="Tokenized workload from scripts/tokenize_workload.py")
+    serve.add_argument("--output", required=True)
+    serve.add_argument("--resume", action="store_true", help="Continue an existing compatible run")
+    serve_analysis = commands.add_parser("analyze-serving", help="Analyze a completed stage 2 serving run")
+    serve_analysis.add_argument("--run", required=True, type=Path)
+    serve_analysis.add_argument("--output", required=True, type=Path)
     for name in ("plan", "run", "run-controlled", "baseline"):
         sub = commands.add_parser(name)
         sub.add_argument("--machine", required=True)
@@ -93,6 +103,13 @@ def dispatch(args: argparse.Namespace) -> None:
         return
     if args.command == "analyze-parallel":
         analyze_parallel(args.run, args.output)
+        return
+    if args.command == "run-serving":
+        status = run_serving(args.machine, args.experiment, args.cases, args.output, resume=args.resume)
+        print(json.dumps(status))
+        return
+    if args.command == "analyze-serving":
+        analyze_serving(args.run, args.output)
         return
     if args.command == "run-parallel":
         run_parallel(args.machine, args.experiment, args.manifest, args.output, resume=args.resume)

@@ -74,6 +74,40 @@ def read_process(pid: int) -> dict:
         return {"error": f"cannot read process {pid}: {exc}"}
 
 
+def process_tree(pid: int) -> list[int]:
+    """The process and all its live descendants (vLLM computes in a child process)."""
+    children: dict[int, list[int]] = {}
+    for entry in Path("/proc").iterdir():
+        if entry.name.isdigit():
+            try:
+                parent = int((entry / "stat").read_text().rsplit(")", 1)[1].split()[1])
+            except (OSError, IndexError, ValueError):
+                continue
+            children.setdefault(parent, []).append(int(entry.name))
+    tree, stack = [], [pid]
+    while stack:
+        current = stack.pop()
+        tree.append(current)
+        stack.extend(children.get(current, []))
+    return tree
+
+
+def read_process_tree(pid: int) -> dict:
+    """CPU seconds, memory and threads summed over the process and its descendants.
+
+    CPU time of descendants that exit inside a window is not counted; the servers
+    measured here keep their workers alive for their whole lifetime.
+    """
+    root = read_process(pid)
+    if "error" in root:
+        return root
+    readings = [root] + [reading for child in process_tree(pid)[1:]
+                         if "error" not in (reading := read_process(child))]
+    total = {key: sum(reading[key] for reading in readings)
+             for key in ("cpu_seconds", "rss_mib", "peak_rss_mib", "threads")}
+    return {**total, "processes": len(readings)}
+
+
 def process_delta(before: dict, after: dict, seconds: float) -> dict:
     for reading in (before, after):
         if "error" in reading:
@@ -81,24 +115,30 @@ def process_delta(before: dict, after: dict, seconds: float) -> dict:
     cpu = after["cpu_seconds"] - before["cpu_seconds"]
     return {"cpu_seconds": cpu, "cpu_cores_mean": cpu / seconds if seconds > 0 else None,
             "rss_mib": after["rss_mib"], "peak_rss_mib": after["peak_rss_mib"],
-            "threads": after["threads"]}
+            "threads": after["threads"], **({"processes": after["processes"]} if "processes" in after else {})}
 
 
-def server_gpu_memory(pid: int) -> dict:
-    """VRAM attributed to the server itself, excluding the desktop's share."""
+def server_gpu_memory(pid: int, pids: list[int] | None = None) -> dict:
+    """VRAM attributed to the server itself (and `pids`, its workers), excluding the desktop."""
+    owners = {str(item) for item in (pids or [pid])}
     result = capture(["nvidia-smi", "--query-compute-apps=pid,used_memory", "--format=csv,noheader,nounits"])
     if result.get("returncode") != 0:
         return {"error": result.get("error") or result.get("stderr", "").strip() or "nvidia-smi failed"}
+    total = 0
     for line in result["stdout"].splitlines():
         owner, _, used = line.partition(",")
-        if owner.strip() == str(pid) and used.strip().isdigit():
-            return {"vram_mib": int(used)}
-    return {"vram_mib": 0}
+        if owner.strip() in owners and used.strip().isdigit():
+            total += int(used)
+    return {"vram_mib": total}
 
 
 class Sampler:
-    def __init__(self, pid: int | None, interval_ms: int = INTERVAL_MS):
+    def __init__(self, pid: int | None, interval_ms: int = INTERVAL_MS, *,
+                 gpu_index: int | None = None, tree: bool = False):
+        """`gpu_index` restricts sampling to one GPU; `tree` counts the server's child processes."""
         self.pid = pid
+        self.gpu_index = gpu_index
+        self.tree = tree
         self.interval_ms = interval_ms
         self.samples: list[tuple[float, dict]] = []
         self.gpu_error: str | None = None
@@ -120,8 +160,8 @@ class Sampler:
             return self
         try:
             self._process = subprocess.Popen(
-                ["nvidia-smi", f"--query-gpu={GPU_QUERY}", "--format=csv,noheader,nounits",
-                 "-lms", str(self.interval_ms)],
+                ["nvidia-smi", *(["-i", str(self.gpu_index)] if self.gpu_index is not None else []),
+                 f"--query-gpu={GPU_QUERY}", "--format=csv,noheader,nounits", "-lms", str(self.interval_ms)],
                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
         except OSError as exc:
             self.gpu_error = f"nvidia-smi unavailable: {exc}"
@@ -129,7 +169,7 @@ class Sampler:
         threading.Thread(target=self._read, daemon=True).start()
         if not self._first.wait(FIRST_SAMPLE_TIMEOUT_SECONDS):
             self.gpu_error = self.gpu_error or "nvidia-smi produced no samples"
-        self.server_gpu = server_gpu_memory(self.pid)
+        self.server_gpu = server_gpu_memory(self.pid, process_tree(self.pid) if self.tree else None)
         return self
 
     def __exit__(self, *_) -> None:
@@ -144,7 +184,10 @@ class Sampler:
     def mark(self) -> dict:
         if self.pid is None:
             return {}
-        return {"time": time.perf_counter(), "process": read_process(self.pid)}
+        return {"time": time.perf_counter(), "process": self._read()}
+
+    def _read(self) -> dict:
+        return read_process_tree(self.pid) if self.tree else read_process(self.pid)
 
     def since(self, mark: dict) -> dict:
         if self.pid is None:
@@ -157,7 +200,7 @@ class Sampler:
             gpu = {"samples": 0, "error": self.gpu_error or "no GPU samples collected"}
         return {"window_seconds": seconds, "interval_ms": self.interval_ms, "gpu": gpu,
                 "server_gpu_memory": self.server_gpu,
-                "process": process_delta(mark["process"], read_process(self.pid), seconds)}
+                "process": process_delta(mark["process"], self._read(), seconds)}
 
 
 @contextmanager

@@ -135,7 +135,7 @@ def run_parallel(machine_path: str, experiment_path: str, manifest: str, output:
     root.mkdir(parents=True, exist_ok=True)
     initialize_run(root, identity, rows, executable, resume)
     total = experiment["rounds"] * len(experiment["cells"])
-    done = 0
+    done, failed = 0, []
     for round_ in range(1, experiment["rounds"] + 1):
         cells = list(experiment["cells"])
         random.Random(experiment["seed"] + round_).shuffle(cells)
@@ -148,11 +148,15 @@ def run_parallel(machine_path: str, experiment_path: str, manifest: str, output:
             log.parent.mkdir(parents=True, exist_ok=True)
             record = run_cell(machine, experiment, cell, texts, round_, log)
             atomic_json(path, record)
+            if record["status"] != "ok":
+                failed.append(path.name)
             rates = {language: round(block["generated_tokens_per_s"], 1)
                      for language, block in record["languages"].items()}
             print(f"[{done}/{total}] round {round_} {cell['id']}: {record['status']} {rates} "
                   f"{record.get('error', '')}", flush=True)
-    atomic_json(root / "status.json", {"phase": "complete", "finished": True})
+    # A failed cell leaves the run incomplete; --resume retries it.
+    atomic_json(root / "status.json", {"phase": "incomplete" if failed else "complete",
+                                       "finished": not failed, "failed_cells": failed})
 
 
 def load_cells(root: Path) -> tuple[dict, list[dict]]:

@@ -1,0 +1,19 @@
+{
+  "machine_id": "lab-pc2-rtx4080",
+  "python": "/work/neo-venv/bin/python",
+  "vllm": "/work/neo-venv/bin/vllm",
+  "neo_dir": "/work/NEO",
+  "model": "/work/models/Llama-2-7b-hf",
+  "neo_library": "/work/NEO/pacpu/build/libpacpu-llama2_7b-tp1.so",
+  "neo_profile_dir": "/work/neo-profile/serving-llama2-v1",
+  "gpu_index": 1,
+  "port": 8000,
+  "swap_gb": 20,
+  "gpu_memory_utilization": 0.9,
+  "num_layers": 32,
+  "omp_threads": null,
+  "omp_cpu_affinity": null,
+  "startup_timeout_seconds": 1800,
+  "request_timeout_seconds": 1800,
+  "min_free_ram_gb": 8
+}
