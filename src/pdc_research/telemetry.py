@@ -184,9 +184,9 @@ class Sampler:
     def mark(self) -> dict:
         if self.pid is None:
             return {}
-        return {"time": time.perf_counter(), "process": self._read()}
+        return {"time": time.perf_counter(), "process": self._read_process()}
 
-    def _read(self) -> dict:
+    def _read_process(self) -> dict:
         return read_process_tree(self.pid) if self.tree else read_process(self.pid)
 
     def since(self, mark: dict) -> dict:
@@ -200,7 +200,7 @@ class Sampler:
             gpu = {"samples": 0, "error": self.gpu_error or "no GPU samples collected"}
         return {"window_seconds": seconds, "interval_ms": self.interval_ms, "gpu": gpu,
                 "server_gpu_memory": self.server_gpu,
-                "process": process_delta(mark["process"], self._read(), seconds)}
+                "process": process_delta(mark["process"], self._read_process(), seconds)}
 
 
 @contextmanager

@@ -81,6 +81,23 @@ class SamplerTests(unittest.TestCase):
         self.assertGreaterEqual(result["process"]["cpu_seconds"], 0)
         self.assertGreater(result["window_seconds"], 0)
 
+    def test_streamed_samples_are_collected_for_one_gpu_and_a_process_tree(self):
+        with tempfile.TemporaryDirectory() as directory:
+            fake = Path(directory) / "nvidia-smi"
+            fake.write_text("#!/bin/sh\n"
+                            "case \"$*\" in *'-i 1'*) ;; *) echo 'missing -i 1' >&2; exit 1;; esac\n"
+                            "while true; do echo '1000, 50, 200.0, 60'; sleep 0.05; done\n")
+            fake.chmod(0o755)
+            with patch.dict(os.environ, {"PATH": f"{directory}:{os.environ['PATH']}"}):
+                with telemetry.Sampler(os.getpid(), gpu_index=1, tree=True) as probe:
+                    mark = probe.mark()
+                    import time
+                    time.sleep(0.4)
+                    result = probe.since(mark)
+        self.assertGreater(result["gpu"]["samples"], 2)
+        self.assertEqual(result["gpu"]["gpu_util_mean_pct"], 50.0)
+        self.assertGreaterEqual(result["process"]["processes"], 1)
+
     def test_conditions_never_raise(self):
         conditions = telemetry.run_conditions()
         self.assertIn("recorded_utc", conditions)
