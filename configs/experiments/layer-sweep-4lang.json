@@ -1,0 +1,66 @@
+{
+  "experiment_id": "layer-sweep-7b-4lang-v1",
+  "selection_file": "configs/workloads/coherent-dev-v1.json",
+  "split": "dev",
+  "languages": [
+    "eng_Latn",
+    "rus_Cyrl",
+    "kaz_Cyrl",
+    "zho_Hans"
+  ],
+  "sentences_per_group": 4,
+  "seed": 42,
+  "warmups": 1,
+  "output_tokens": 64,
+  "matched_tokens": [],
+  "synthetic_prompt_tokens": [
+    64
+  ],
+  "execution_order": "configuration-first",
+  "input_mode": "aligned",
+  "groups": 20,
+  "expected_groups": 20,
+  "repetitions": 2,
+  "configurations": [
+    {
+      "id": "g00-t8",
+      "threads": 8,
+      "gpu_layers": 0
+    },
+    {
+      "id": "g04-t8",
+      "threads": 8,
+      "gpu_layers": 4
+    },
+    {
+      "id": "g08-t8",
+      "threads": 8,
+      "gpu_layers": 8
+    },
+    {
+      "id": "g14-t8",
+      "threads": 8,
+      "gpu_layers": 14
+    },
+    {
+      "id": "g20-t8",
+      "threads": 8,
+      "gpu_layers": 20
+    },
+    {
+      "id": "g24-t8",
+      "threads": 8,
+      "gpu_layers": 24
+    },
+    {
+      "id": "g28-t8",
+      "threads": 8,
+      "gpu_layers": 28
+    },
+    {
+      "id": "g29-t8",
+      "threads": 8,
+      "gpu_layers": 29
+    }
+  ]
+}

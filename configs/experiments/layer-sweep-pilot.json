@@ -1,0 +1,56 @@
+{
+  "experiment_id": "layer-sweep-pilot-v1",
+  "selection_file": "configs/workloads/coherent-smoke-v1.json",
+  "split": "dev",
+  "languages": [
+    "eng_Latn",
+    "kaz_Cyrl"
+  ],
+  "sentences_per_group": 4,
+  "seed": 42,
+  "warmups": 1,
+  "output_tokens": 64,
+  "matched_tokens": [],
+  "synthetic_prompt_tokens": [
+    64
+  ],
+  "execution_order": "configuration-first",
+  "input_mode": "aligned",
+  "groups": 1,
+  "expected_groups": 1,
+  "repetitions": 1,
+  "configurations": [
+    {
+      "id": "g00-t8",
+      "threads": 8,
+      "gpu_layers": 0
+    },
+    {
+      "id": "g00-t8-hostops",
+      "threads": 8,
+      "gpu_layers": 0,
+      "server_args": [
+        "--no-op-offload"
+      ]
+    },
+    {
+      "id": "g00-t8-nogpu",
+      "threads": 8,
+      "gpu_layers": 0,
+      "server_args": [
+        "--device",
+        "none"
+      ]
+    },
+    {
+      "id": "g28-t8",
+      "threads": 8,
+      "gpu_layers": 28
+    },
+    {
+      "id": "g29-t8",
+      "threads": 8,
+      "gpu_layers": 29
+    }
+  ]
+}

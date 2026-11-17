@@ -7,7 +7,8 @@ from pathlib import Path
 
 from .backend import server
 from .checkpoints import atomic_json
-from .common import capture, read_json, request, sha256
+from .common import append_row, capture, read_json, request, sha256
+from .telemetry import run_conditions
 from .workloads import make_cases
 
 
@@ -29,6 +30,12 @@ def build_fingerprint(machine: dict, experiment: dict, manifest, executable: str
     }
 
 
+def record_conditions(root: Path, event: str) -> None:
+    """Append power, load and GPU state so each start and resume stays auditable."""
+    with (root / "conditions.jsonl").open("a", encoding="utf-8") as stream:
+        append_row(stream, {"event": event, **run_conditions()})
+
+
 def initialize_run(root: Path, identity: dict, rows: list[dict], executable: str, resume: bool) -> None:
     if resume:
         if not (root / "metadata.json").is_file():
@@ -39,6 +46,7 @@ def initialize_run(root: Path, identity: dict, rows: list[dict], executable: str
         if not (root / "inputs.json").exists():
             atomic_json(root / "inputs.json", rows)
         (root / "STOP").unlink(missing_ok=True)  # Explicit resume acknowledges an earlier stop request.
+        record_conditions(root, "resume")
         return
     atomic_json(root / "metadata.json", {
         "fingerprint": identity, "started_utc": datetime.now(timezone.utc).isoformat(),
@@ -46,6 +54,7 @@ def initialize_run(root: Path, identity: dict, rows: list[dict], executable: str
         "gpu_before": capture(["nvidia-smi"]), "git": capture(["git", "rev-parse", "HEAD"]),
     })
     atomic_json(root / "inputs.json", rows)
+    record_conditions(root, "start")
 
 
 def prepare_cases(root: Path, machine: dict, experiment: dict, rows: list[dict]) -> list[dict]:

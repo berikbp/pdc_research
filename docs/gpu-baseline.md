@@ -44,5 +44,5 @@ The controlled RQ1 matrix applies it only to `gpu-model-only`. Other entries ret
 their default embedding placement. `CUDA0` is NVIDIA-specific; other backends need
 a verified buffer name and new provenance.
 
-Read the [current report](current-report.md) for both the exploratory baseline
+Read the [current report](report-2026-10-wsl.md) for both the exploratory baseline
 and its controlled comparison. Host CPU support is allowed throughout.

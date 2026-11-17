@@ -1,0 +1,78 @@
+{
+  "decode_ms_per_token": {
+    "metric": "decode_ms_per_token",
+    "base_ms": 19.27169414062504,
+    "per_cpu_block_ms": 2.433479413897995,
+    "handoff_ms": 1.4094568998701527,
+    "output_on_cpu_ms": 7.139927421142205,
+    "r_squared": 0.9995602769153754,
+    "max_abs_residual": 1.0010715441950708,
+    "fitted_terms": [
+      "base_ms",
+      "per_cpu_block_ms",
+      "handoff_ms",
+      "output_on_cpu_ms"
+    ],
+    "excluded_configurations": [],
+    "full_offload_observed": true,
+    "ci95": {
+      "base_ms": [
+        19.257376047363362,
+        19.284146647949253
+      ],
+      "per_cpu_block_ms": [
+        2.431956856431477,
+        2.4349776066348667
+      ],
+      "handoff_ms": [
+        1.3935463553057736,
+        1.4252865930120653
+      ],
+      "output_on_cpu_ms": [
+        7.097446153515862,
+        7.184855639708234
+      ]
+    },
+    "bootstrap_samples": 2000,
+    "bootstrap_seed": 20261115,
+    "passage_clusters": 20
+  },
+  "prefill_ms_per_token": {
+    "metric": "prefill_ms_per_token",
+    "base_ms": 0.4791704685886082,
+    "per_cpu_block_ms": 0.13253246562528567,
+    "handoff_ms": 0.03645069020878701,
+    "output_on_cpu_ms": -0.0031064018848897387,
+    "r_squared": 0.9997226081545331,
+    "max_abs_residual": 0.039619214598131114,
+    "fitted_terms": [
+      "base_ms",
+      "per_cpu_block_ms",
+      "handoff_ms",
+      "output_on_cpu_ms"
+    ],
+    "excluded_configurations": [],
+    "full_offload_observed": true,
+    "ci95": {
+      "base_ms": [
+        0.46938962970925213,
+        0.4898299411535667
+      ],
+      "per_cpu_block_ms": [
+        0.12664004565131282,
+        0.1386703384430266
+      ],
+      "handoff_ms": [
+        0.03092767199059798,
+        0.04285791251166521
+      ],
+      "output_on_cpu_ms": [
+        -0.013687182766194331,
+        0.008257618629232487
+      ]
+    },
+    "bootstrap_samples": 2000,
+    "bootstrap_seed": 20261115,
+    "passage_clusters": 20
+  }
+}

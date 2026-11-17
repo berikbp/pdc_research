@@ -13,7 +13,7 @@ length: 8–10 minutes for slides 1–11; slides 12–14 are backup tables.
 - [Summary text](supervisor-summary.md): editable plain-text version.
 - [Speaker notes and discussion guide](speaker-notes.md): slide-by-slide notes,
   an opening statement and likely supervisor questions.
-- [Full current report](../current-report.md): detailed history and limitations.
+- [Full current report](../report-2026-10-wsl.md): detailed history and limitations.
 
 ## Presentation message
 

@@ -1,20 +1,24 @@
 # Multilingual CPU–GPU inference
 
-Reproducible FLORES-200 / llama.cpp experiments investigating whether language
-changes the best CPU–GPU inference configuration after token length is controlled.
+Reproducible FLORES-200 / llama.cpp experiments on when CPU+GPU execution of an
+LLM outperforms GPU-only, and whether the request language shifts that boundary.
 
-**Current finding:** on the initial laptop and Qwen2.5-7B Q4_K_M, the controlled
-64-input / 64-output-token experiment found no stable, practically meaningful
-language-dependent configuration preference. This is a restricted negative RQ1
-finding, not proof that language never matters. RQ2 has not been evaluated.
+**Current finding (stage 1, one laptop, native Linux):** when the model fits in
+VRAM, moving layers to the CPU never beats GPU-only, and a three-term cost model
+explains the loss (about 2.4 ms per token for every block on the CPU). A split
+pays only when the model does not fit: Qwen2.5-14B with 41 of 49 layers on the
+GPU is 3.1 times faster than the CPU alone. Language shifts the best
+configuration only in that memory-bound regime under concurrent requests, and
+only through token length.
 
-Read the **[current full report](docs/current-report.md)** for all three stages,
-the CPU-thread detour, corrected GPU-only baseline, tables and limitations.
-The original [research proposal](Research_Proposal.md) remains the source of RQ1/RQ2.
+Read the **[current full report](docs/current-report.md)** for the measurements,
+figures, the comparison with APEX and the limitations. The first stage, measured
+under WSL with the original questions from the
+[research proposal](Research_Proposal.md), is the
+[October report](docs/report-2026-10-wsl.md).
 
-A separate [model/thread investigation](docs/model-thread-extension.md) now extends
-the Stage-2 characterization to Qwen2.5-3B. Its scope and shuffled-round protocol
-are distinct from the original controlled RQ1 experiment.
+The earlier [model/thread investigation](docs/model-thread-extension.md) is a
+separate characterization and is not part of the current questions.
 
 For the supervisor meeting, use the [presentation package](docs/presentation/README.md):
 editable PowerPoint, slide PDF, one-page summary and speaker notes.
@@ -72,7 +76,8 @@ No model or dataset is redistributed in this repository.
 | `src/pdc_research/` | CLI, workloads, execution, checkpoints and analysis |
 | `scripts/` | Native build, asset setup and report-export entrypoints |
 | `tests/` | Tests with artificial data and mocked inference |
-| `docs/current-report.md` | Complete research history and current answer |
+| `docs/current-report.md` | Current questions, measurements and answers |
+| `docs/report-2026-10-wsl.md` | First stage under WSL, superseded |
 | `docs/results/` | Small report tables and uncertainty summaries |
 
 Other references: [experiment design](docs/experiment-design.md),

@@ -1,0 +1,174 @@
+{
+  "experiment_id": "layer-sweep-7b-v1",
+  "selection_file": "configs/workloads/coherent-dev-v1.json",
+  "split": "dev",
+  "languages": [
+    "eng_Latn",
+    "kaz_Cyrl"
+  ],
+  "sentences_per_group": 4,
+  "seed": 42,
+  "warmups": 1,
+  "output_tokens": 64,
+  "matched_tokens": [],
+  "synthetic_prompt_tokens": [
+    64
+  ],
+  "execution_order": "configuration-first",
+  "input_mode": "aligned",
+  "groups": 20,
+  "expected_groups": 20,
+  "repetitions": 2,
+  "configurations": [
+    {
+      "id": "g00-t8",
+      "threads": 8,
+      "gpu_layers": 0
+    },
+    {
+      "id": "g01-t8",
+      "threads": 8,
+      "gpu_layers": 1
+    },
+    {
+      "id": "g02-t8",
+      "threads": 8,
+      "gpu_layers": 2
+    },
+    {
+      "id": "g03-t8",
+      "threads": 8,
+      "gpu_layers": 3
+    },
+    {
+      "id": "g04-t8",
+      "threads": 8,
+      "gpu_layers": 4
+    },
+    {
+      "id": "g05-t8",
+      "threads": 8,
+      "gpu_layers": 5
+    },
+    {
+      "id": "g06-t8",
+      "threads": 8,
+      "gpu_layers": 6
+    },
+    {
+      "id": "g07-t8",
+      "threads": 8,
+      "gpu_layers": 7
+    },
+    {
+      "id": "g08-t8",
+      "threads": 8,
+      "gpu_layers": 8
+    },
+    {
+      "id": "g09-t8",
+      "threads": 8,
+      "gpu_layers": 9
+    },
+    {
+      "id": "g10-t8",
+      "threads": 8,
+      "gpu_layers": 10
+    },
+    {
+      "id": "g11-t8",
+      "threads": 8,
+      "gpu_layers": 11
+    },
+    {
+      "id": "g12-t8",
+      "threads": 8,
+      "gpu_layers": 12
+    },
+    {
+      "id": "g13-t8",
+      "threads": 8,
+      "gpu_layers": 13
+    },
+    {
+      "id": "g14-t8",
+      "threads": 8,
+      "gpu_layers": 14
+    },
+    {
+      "id": "g15-t8",
+      "threads": 8,
+      "gpu_layers": 15
+    },
+    {
+      "id": "g16-t8",
+      "threads": 8,
+      "gpu_layers": 16
+    },
+    {
+      "id": "g17-t8",
+      "threads": 8,
+      "gpu_layers": 17
+    },
+    {
+      "id": "g18-t8",
+      "threads": 8,
+      "gpu_layers": 18
+    },
+    {
+      "id": "g19-t8",
+      "threads": 8,
+      "gpu_layers": 19
+    },
+    {
+      "id": "g20-t8",
+      "threads": 8,
+      "gpu_layers": 20
+    },
+    {
+      "id": "g21-t8",
+      "threads": 8,
+      "gpu_layers": 21
+    },
+    {
+      "id": "g22-t8",
+      "threads": 8,
+      "gpu_layers": 22
+    },
+    {
+      "id": "g23-t8",
+      "threads": 8,
+      "gpu_layers": 23
+    },
+    {
+      "id": "g24-t8",
+      "threads": 8,
+      "gpu_layers": 24
+    },
+    {
+      "id": "g25-t8",
+      "threads": 8,
+      "gpu_layers": 25
+    },
+    {
+      "id": "g26-t8",
+      "threads": 8,
+      "gpu_layers": 26
+    },
+    {
+      "id": "g27-t8",
+      "threads": 8,
+      "gpu_layers": 27
+    },
+    {
+      "id": "g28-t8",
+      "threads": 8,
+      "gpu_layers": 28
+    },
+    {
+      "id": "g29-t8",
+      "threads": 8,
+      "gpu_layers": 29
+    }
+  ]
+}

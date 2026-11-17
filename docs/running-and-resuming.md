@@ -102,4 +102,26 @@ Schema-1 run directories cannot be resumed by the new runner.
 
 The initial one-repetition experiment was exploratory. Repeated trials and the
 controlled phase have since been completed on the initial laptop; see the
-[current report](current-report.md) for their restricted conclusions.
+[current report](report-2026-10-wsl.md) for their restricted conclusions.
+
+## Telemetry
+
+Every successful result carries a `telemetry` object for exactly that request:
+
+- `gpu`: whole-GPU readings sampled every 100 ms by one streaming `nvidia-smi` process:
+  peak VRAM, mean and peak utilization, mean power, energy (mean power × request time),
+  peak temperature and the number of samples. Whole-GPU VRAM includes the desktop.
+- `server_gpu_memory`: VRAM attributed to the `llama-server` process itself, read once
+  after the server is ready.
+- `process`: server CPU seconds over all threads, mean busy cores, resident memory and
+  its peak, read from `/proc` at the request boundaries (not sampled).
+
+Requests shorter than about 0.5 s contain only a few GPU samples, and `nvidia-smi`
+utilization is itself an average over the driver's own period; treat per-request
+utilization of short requests as coarse and aggregate over repetitions. If
+`nvidia-smi` or the process cannot be read, the field holds an `error` string. A
+missing reading is never stored as zero.
+
+`conditions.jsonl` in the run directory gains one line per start and per resume:
+CPU governor, energy preference, platform power profile, AC state, load average,
+free memory, and GPU state with the processes already holding VRAM.

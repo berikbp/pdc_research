@@ -1,0 +1,30 @@
+{
+  "machine_id": "berik-7435hs-rtx4060-popos",
+  "model": "models/qwen2.5-7b-instruct-q4_k_m.gguf",
+  "llama_bin": "vendor/llama.cpp/build/bin",
+  "threads": [
+    8
+  ],
+  "gpu_layers": [
+    0,
+    99
+  ],
+  "context_size": 2048,
+  "batch_size": 512,
+  "ubatch_size": 128,
+  "port": 18080,
+  "startup_timeout_seconds": 180,
+  "request_timeout_seconds": 600,
+  "reported_hardware": {
+    "os": "Pop!_OS 24.04 LTS, kernel 7.0.11-76070011-generic (native Linux, not WSL)",
+    "cpu": "AMD Ryzen 7 7435HS, 8 cores / 16 logical CPUs",
+    "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "vram_mib": 8188,
+    "ram": "23 GiB visible, 30 GiB swap",
+    "driver": "580.173.02 (nvidia-driver-580-open)",
+    "driver_cuda_compatibility": "13.0",
+    "cuda_toolkit": "project-local wheels 13.0.88, configs/cuda-linux-13.0.txt",
+    "desktop_vram_note": "COSMIC desktop holds roughly 0.7 GiB VRAM; record nvidia-smi before each run"
+  },
+  "notes": "Minimal CPU/full-offload validation on native Linux before any sweep."
+}

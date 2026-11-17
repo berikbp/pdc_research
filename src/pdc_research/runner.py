@@ -11,6 +11,7 @@ from .backend import binary, completion, server
 from .checkpoints import Checkpoints, atomic_json, run_lock, trial_id, trial_identity
 from .common import load_rows
 from .config import configurations
+from .telemetry import sampler
 from .session import StopRequested, build_fingerprint, initialize_run, prepare_cases, check_stop
 
 
@@ -29,7 +30,8 @@ def _configuration_trials(checkpoints: Checkpoints, ordinal: int, machine: dict,
     log = checkpoints.directory(ordinal) / "logs" / f"t{threads}-g{layers}-{uuid.uuid4().hex}.log"
     log.parent.mkdir(parents=True, exist_ok=True)
     started = time.perf_counter()
-    with (nullcontext(shared_session[0]) if shared_session else server(machine, threads, layers, log)) as base:
+    with (nullcontext(shared_session[0]) if shared_session else server(machine, threads, layers, log)) as base, \
+            (nullcontext(shared_session[3]) if shared_session else sampler(log)) as probe:
         startup_ms = shared_session[1] if shared_session else (time.perf_counter() - started) * 1000
         if shared_session:
             log = shared_session[2]
@@ -43,6 +45,7 @@ def _configuration_trials(checkpoints: Checkpoints, ordinal: int, machine: dict,
             case = cases[trial_id(identity)]
             record = {**identity, "prompt": ordinal, "server_startup_ms": startup_ms,
                       "server_log": str(log.relative_to(checkpoints.root))}
+            mark = probe.mark()
             try:
                 response, elapsed = completion(base, case["tokens"], experiment, timeout)
             except (OSError, ValueError, KeyError, RuntimeError) as exc:
@@ -51,6 +54,7 @@ def _configuration_trials(checkpoints: Checkpoints, ordinal: int, machine: dict,
                 raise
             checkpoints.save(ordinal, {
                 **record, "status": "ok", "client_elapsed_ms": elapsed, "response": response,
+                "telemetry": probe.since(mark),
             })
             status = checkpoints.progress("running", ordinal)
             print(f"Prompt {ordinal}: {len(checkpoints.expected[ordinal]) - len(checkpoints.pending(ordinal))}"
@@ -74,7 +78,7 @@ def _drive(checkpoints: Checkpoints, machine: dict, experiment: dict,
                 log = checkpoints.root / "logs" / f"t{threads}-g{layers}-{uuid.uuid4().hex}.log"
                 log.parent.mkdir(parents=True, exist_ok=True)
                 started = time.perf_counter()
-                with server(machine, threads, layers, log) as base:
+                with server(machine, threads, layers, log) as base, sampler(log) as probe:
                     startup_ms = (time.perf_counter() - started) * 1000
                     for _ in range(experiment["warmups"]):
                         check_stop(checkpoints.root)
@@ -82,7 +86,7 @@ def _drive(checkpoints: Checkpoints, machine: dict, experiment: dict,
                                    machine["request_timeout_seconds"])
                     for ordinal in ordinals:
                         _configuration_trials(checkpoints, ordinal, machine, experiment,
-                                              threads, layers, (base, startup_ms, log))
+                                              threads, layers, (base, startup_ms, log, probe))
             checkpoints.progress("complete", ordinal)
             return
         for ordinal in range(1, len(checkpoints.groups) + 1):

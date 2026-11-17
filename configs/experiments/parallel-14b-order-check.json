@@ -1,0 +1,31 @@
+{
+  "experiment_id": "parallel-14b-order-check-v1",
+  "seed": 66,
+  "output_tokens": 64,
+  "rounds": 2,
+  "requests_per_language": 32,
+  "threads": 8,
+  "cells": [
+    {
+      "id": "c256-np16-g39",
+      "gpu_layers": 39,
+      "slots": 16,
+      "context_per_slot": 256,
+      "languages": [
+        "eng_Latn",
+        "zho_Hans"
+      ]
+    },
+    {
+      "id": "c512-np16-g36",
+      "gpu_layers": 36,
+      "slots": 16,
+      "context_per_slot": 512,
+      "languages": [
+        "kaz_Cyrl",
+        "rus_Cyrl",
+        "eng_Latn"
+      ]
+    }
+  ]
+}
