@@ -35,7 +35,8 @@ from .parallel import request_order
 from .telemetry import Sampler, process_tree, run_conditions, server_gpu_memory
 
 SYSTEMS = ("neo", "neo_base", "vllm")
-NEO_PROFILE_FILES = ("linr.json", "pref.json", "gdec.json", "cdec.json", "lnch.json")
+# Tables NEO builds at start-up (ModelProfiler.init_profile_tables); _profile_lnch is never called.
+NEO_PROFILE_FILES = ("linr.json", "pref.json", "gdec.json", "cdec.json")
 EXPERIMENT_FIELDS = ("experiment_id", "seed", "output_tokens", "rounds", "systems", "memory_blocks", "loads",
                      "languages", "min_requests", "min_waves", "warmup_waves", "block_size", "max_model_len",
                      "max_tokens_in_batch", "max_num_seqs")
