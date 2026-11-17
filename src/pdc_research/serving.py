@@ -119,6 +119,11 @@ def gpu_blocks_requested(system: str, blocks: int | None, machine: dict) -> int 
     return blocks
 
 
+def blocks_per_sequence(experiment: dict) -> int:
+    """NEO profiles one prefill of `max_tokens_in_batch` tokens, so a sequence must hold that many too."""
+    return math.ceil(max(experiment["max_model_len"], experiment["max_tokens_in_batch"]) / experiment["block_size"])
+
+
 def server_command(system: str, blocks: int | None, machine: dict, experiment: dict) -> list[str]:
     requested = gpu_blocks_requested(system, blocks, machine)
     if system == "vllm":
@@ -137,7 +142,7 @@ def server_command(system: str, blocks: int | None, machine: dict, experiment: d
     command = [machine["python"], "-m", "swiftllm.server.api_server", "--host", "127.0.0.1",
                "--port", str(machine["port"]), "--model-path", machine["model"],
                "--block-size", str(block_size),
-               "--max-blocks-per-seq", str(math.ceil(experiment["max_model_len"] / block_size)),
+               "--max-blocks-per-seq", str(blocks_per_sequence(experiment)),
                "--max-seqs-in-block-table", str(experiment["max_num_seqs"]),
                "--max-batch-size", str(experiment["max_num_seqs"]),
                "--max-tokens-in-batch", str(experiment["max_tokens_in_batch"]),

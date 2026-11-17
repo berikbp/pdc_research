@@ -86,7 +86,8 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(vllm[vllm.index("--num-gpu-blocks-override") + 1], "64")
         self.assertIn("--no-enable-prefix-caching", vllm)
         self.assertNotIn("--num-gpu-blocks-override", server_command("neo", None, MACHINE, EXPERIMENT))
-        self.assertEqual(neo[neo.index("--max-blocks-per-seq") + 1], "48")
+        # NEO profiles a single prefill of max_tokens_in_batch (960) tokens: 60 blocks, not 768 / 16 = 48.
+        self.assertEqual(neo[neo.index("--max-blocks-per-seq") + 1], "60")
 
     def test_environment_selects_one_gpu_and_binds_only_neo_threads(self):
         machine = {**MACHINE, "omp_threads": 8, "omp_cpu_affinity": "0-7"}
