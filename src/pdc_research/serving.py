@@ -34,9 +34,15 @@ from .common import append_row, capture, read_json, sha256
 from .parallel import request_order
 from .telemetry import Sampler, process_tree, run_conditions, server_gpu_memory
 
-SYSTEMS = ("neo", "neo_base", "vllm")
-# Tables NEO builds at start-up (ModelProfiler.init_profile_tables); _profile_lnch is never called.
+# neo: NEO as shipped (CPU launch time 0.8 ms, the authors' constant); neo_tuned: NEO with the launch
+# time measured on this machine (calibrate_neo); neo_base: the same engine GPU-only; vllm: reference.
+SYSTEMS = ("neo", "neo_tuned", "neo_base", "vllm")
+HYBRID = ("neo", "neo_tuned")
+NEO_SYSTEMS = HYBRID + ("neo_base",)
+AUTHORS_CPU_LAUNCH_MS = 0.8
+# Tables NEO builds at start-up (ModelProfiler.init_profile_tables); lnch.json only with --profile-cpu-launch.
 NEO_PROFILE_FILES = ("linr.json", "pref.json", "gdec.json", "cdec.json")
+LAUNCH_PROFILE = "lnch.json"
 EXPERIMENT_FIELDS = ("experiment_id", "seed", "output_tokens", "rounds", "systems", "memory_blocks", "loads",
                      "languages", "min_requests", "min_waves", "warmup_waves", "block_size", "max_model_len",
                      "max_tokens_in_batch", "max_num_seqs")
@@ -47,6 +53,11 @@ MACHINE_FIELDS = ("machine_id", "python", "vllm", "neo_dir", "model", "neo_libra
 
 # ----------------------------------------------------------------------------- plan
 
+def memory_levels(experiment: dict, system: str) -> list[int | None]:
+    """KV budgets measured for one system: its own list if the experiment narrows it, else the shared one."""
+    return experiment.get("memory_blocks_by_system", {}).get(system, experiment["memory_blocks"])
+
+
 def validate_serving(experiment: dict) -> None:
     missing = [name for name in EXPERIMENT_FIELDS if name not in experiment]
     if missing:
@@ -54,11 +65,14 @@ def validate_serving(experiment: dict) -> None:
     unknown = set(experiment["systems"]) - set(SYSTEMS)
     if unknown:
         raise ValueError(f"Unknown systems: {sorted(unknown)}")
+    stray = set(experiment.get("memory_blocks_by_system", {})) - set(experiment["systems"])
+    if stray:
+        raise ValueError(f"memory_blocks_by_system names systems not in the experiment: {sorted(stray)}")
     if not experiment["loads"] or min(experiment["loads"]) < 1:
         raise ValueError("Loads must be positive")
     if max(experiment["loads"]) > experiment["max_num_seqs"]:
         raise ValueError("max_num_seqs must admit the largest load")
-    for blocks in experiment["memory_blocks"]:
+    for blocks in {b for system in experiment["systems"] for b in memory_levels(experiment, system)}:
         if blocks is None:
             continue
         neo_blocks = blocks * 32 // 33  # NEO's share; checked exactly against num_layers at run time
@@ -81,7 +95,7 @@ def memory_label(blocks: int | None) -> str:
 def cells(experiment: dict) -> list[dict]:
     return [{"id": f"{system}-{memory_label(blocks)}-c{load:02d}", "system": system, "blocks": blocks,
              "load": load}
-            for system in experiment["systems"] for blocks in experiment["memory_blocks"]
+            for system in experiment["systems"] for blocks in memory_levels(experiment, system)
             for load in experiment["loads"]]
 
 
@@ -114,7 +128,7 @@ def gpu_blocks_requested(system: str, blocks: int | None, machine: dict) -> int 
     """KV blocks the system is asked for; NEO gives one layer's share to CPU prefill, as in its scripts."""
     if blocks is None:
         return None
-    if system == "neo":
+    if system in HYBRID:
         layers = machine["num_layers"]
         return blocks * layers // (layers + 1)
     return blocks
@@ -125,7 +139,8 @@ def blocks_per_sequence(experiment: dict) -> int:
     return math.ceil(max(experiment["max_model_len"], experiment["max_tokens_in_batch"]) / experiment["block_size"])
 
 
-def server_command(system: str, blocks: int | None, machine: dict, experiment: dict) -> list[str]:
+def server_command(system: str, blocks: int | None, machine: dict, experiment: dict,
+                   extra: tuple[str, ...] = ()) -> list[str]:
     requested = gpu_blocks_requested(system, blocks, machine)
     if system == "vllm":
         command = [machine["vllm"], "serve", machine["model"], "--host", "127.0.0.1",
@@ -153,7 +168,11 @@ def server_command(system: str, blocks: int | None, machine: dict, experiment: d
                "--profile-result-path", machine["neo_profile_dir"].rstrip("/") + "/"]
     if requested is not None:
         command += ["--num-gpu-blocks-override", str(requested)]
-    return command + (["--extra-layer-for-cprf"] if system == "neo" else ["--always-use-gpu"])
+    if system == "neo_tuned":
+        if machine.get("neo_cpu_launch_ms") is None:
+            raise ValueError("neo_tuned needs neo_cpu_launch_ms in the machine profile; run calibrate-neo")
+        command += ["--cpu-launch-time", str(machine["neo_cpu_launch_ms"])]
+    return command + (["--extra-layer-for-cprf"] if system in HYBRID else ["--always-use-gpu"]) + list(extra)
 
 
 def server_environment(system: str, machine: dict) -> dict:
@@ -170,6 +189,7 @@ def server_environment(system: str, machine: dict) -> dict:
 
 REPORTED = {
     "neo": (re.compile(r"Number of GPU blocks: (\d+)"), 1),
+    "neo_tuned": (re.compile(r"Number of GPU blocks: (\d+)"), 1),
     "neo_base": (re.compile(r"Number of GPU blocks: (\d+)"), 1),
     "vllm": (re.compile(r"GPU KV cache size: ([\d,]+) tokens"), None),
 }
@@ -212,7 +232,8 @@ def get_json(port: int, path: str, timeout: float = 5) -> dict | str:
 
 
 @contextmanager
-def serving(system: str, blocks: int | None, machine: dict, experiment: dict, log: Path) -> Iterator[int]:
+def serving(system: str, blocks: int | None, machine: dict, experiment: dict, log: Path,
+            extra: tuple[str, ...] = ()) -> Iterator[int]:
     """Start one server in its own process group, wait until it answers, always stop it."""
     port = machine["port"]
     with socket.socket() as sock:
@@ -222,7 +243,7 @@ def serving(system: str, blocks: int | None, machine: dict, experiment: dict, lo
         free = free_ram_gb()
         if free is not None and free < machine["swap_gb"] + machine["min_free_ram_gb"]:
             raise RuntimeError(f"Only {free:.0f} GB RAM available for {machine['swap_gb']} GB of swap space")
-    command = server_command(system, blocks, machine, experiment)
+    command = server_command(system, blocks, machine, experiment, extra)
     ready = "/stats" if system != "vllm" else "/health"
     with log.open("w", encoding="utf-8") as stream:
         stream.write(json.dumps(command) + "\n")
@@ -366,9 +387,12 @@ def counters(system: str, port: int) -> dict:
 def counter_delta(before: dict, after: dict) -> dict:
     if "error" in before or "error" in after:
         return {"error": before.get("error") or after.get("error")}
-    delta = {key: after[key] - before[key] for key in after if key != "cpu_queue_max" and key in before}
+    settings = ("cpu_queue_max", "cpu_launch_time_ms")
+    delta = {key: after[key] - before[key] for key in after if key not in settings and key in before}
     if "cpu_queue_max" in after:
         delta["cpu_queue_max_since_start"] = after["cpu_queue_max"]
+    if "cpu_launch_time_ms" in after:
+        delta["cpu_launch_time_ms"] = after["cpu_launch_time_ms"]
     decode = delta.get("gpu_decode_tokens", 0) + delta.get("cpu_decode_tokens", 0)
     if "cpu_decode_tokens" in delta:
         delta["cpu_decode_share"] = delta["cpu_decode_tokens"] / decode if decode else 0.0
@@ -431,9 +455,16 @@ def fingerprint(machine: dict, experiment: dict, cases_path: str) -> dict:
     model = Path(machine["model"])
     profile = Path(machine["neo_profile_dir"])
     missing = [name for name in NEO_PROFILE_FILES if not (profile / name).is_file()]
-    if missing and {"neo", "neo_base"} & set(experiment["systems"]):
-        raise ValueError(f"NEO profile incomplete in {profile}: {missing}. Create it in the probe first; "
+    if missing and set(NEO_SYSTEMS) & set(experiment["systems"]):
+        raise ValueError(f"NEO profile incomplete in {profile}: {missing}. Run calibrate-neo first; "
                          "a profile built during a measured cell would change NEO's decisions mid-run.")
+    files = list(NEO_PROFILE_FILES)
+    if "neo_tuned" in experiment["systems"]:
+        measured = measured_cpu_launch_ms(profile)
+        if machine.get("neo_cpu_launch_ms") is None or abs(machine["neo_cpu_launch_ms"] - measured) > 1e-6:
+            raise ValueError(f"neo_cpu_launch_ms must be the value measured by calibrate-neo ({measured:.6f}), "
+                             f"not {machine.get('neo_cpu_launch_ms')}")
+        files.append(LAUNCH_PROFILE)
     cases = read_json(cases_path)
     tokenizer = model / "tokenizer.json"
     if sha256(tokenizer) != cases["tokenizer"]["tokenizer_json_sha256"]:
@@ -444,7 +475,7 @@ def fingerprint(machine: dict, experiment: dict, cases_path: str) -> dict:
         "model_files_sha256": {path.name: sha256(path) for path in sorted(model.glob("*.safetensors"))},
         "model_config_sha256": sha256(model / "config.json"),
         "neo_library_sha256": sha256(machine["neo_library"]),
-        "neo_profile_sha256": {name: sha256(profile / name) for name in NEO_PROFILE_FILES if not missing},
+        "neo_profile_sha256": profile_hashes(profile, files) if not missing else {},
         "neo_commit": capture(["git", "-C", machine["neo_dir"], "rev-parse", "HEAD"]).get("stdout", "").strip(),
         "neo_dirty": capture(["git", "-C", machine["neo_dir"], "status", "--porcelain", "--untracked-files=no"]
                              ).get("stdout", "").strip(),
@@ -453,13 +484,28 @@ def fingerprint(machine: dict, experiment: dict, cases_path: str) -> dict:
     }
 
 
+def measured_cpu_launch_ms(profile: Path) -> float:
+    """Mean of NEO's launch-time table, exactly as its profiler returns it to the scheduler."""
+    path = profile / LAUNCH_PROFILE
+    if not path.is_file():
+        raise ValueError(f"No {LAUNCH_PROFILE} in {profile}; run calibrate-neo first")
+    times = read_json(path)["T_list"]
+    flat = [value for item in times for value in (item if isinstance(item, list) else [item])]
+    return st.mean(flat)
+
+
+def profile_hashes(profile: Path, names) -> dict:
+    return {name: sha256(profile / name) for name in names}
+
+
 def record_conditions(root: Path, event: str) -> None:
     with (root / "conditions.jsonl").open("a", encoding="utf-8") as stream:
         append_row(stream, {"event": event, **run_conditions()})
 
 
 def run_serving(machine_path: str, experiment_path: str, cases_path: str, output: str, *,
-                resume: bool = False, cell_runner=run_cell, identity: dict | None = None) -> dict:
+                resume: bool = False, cell_runner=run_cell, identity: dict | None = None,
+                until_round: int | None = None) -> dict:
     machine, experiment = read_json(machine_path), read_json(experiment_path)
     validate_serving(experiment)
     missing = [name for name in MACHINE_FIELDS if name not in machine]
@@ -483,8 +529,10 @@ def run_serving(machine_path: str, experiment_path: str, cases_path: str, output
                                              "gpu_before": capture(["nvidia-smi"])})
     record_conditions(root, "resume" if resume else "start")
     total = experiment["rounds"] * len(cells(experiment))
+    expected_profile = identity.get("neo_profile_sha256") or {}
+    last_round = experiment["rounds"] if until_round is None else min(until_round, experiment["rounds"])
     done, failed, stopped = 0, [], False
-    for round_ in range(1, experiment["rounds"] + 1):
+    for round_ in range(1, last_round + 1):
         for cell in round_order(experiment, round_):
             done += 1
             path = root / "cells" / f"round-{round_}-{cell['id']}.json"
@@ -499,17 +547,65 @@ def run_serving(machine_path: str, experiment_path: str, cases_path: str, output
             atomic_json(path, record)
             if record["status"] != "ok":
                 failed.append(path.name)
+            profile_now = profile_hashes(Path(machine["neo_profile_dir"]), expected_profile) if expected_profile else {}
+            if profile_now != expected_profile:
+                atomic_json(root / "status.json", {"phase": "profile-changed", "finished": False,
+                                                   "failed_cells": failed + [path.name]})
+                raise RuntimeError(f"NEO rewrote its profile during {path.name}; later cells would use other "
+                                   "tables. Recalibrate at the top level and start a new run.")
             rates = {language: round(block["generated_tokens_per_s"], 1)
                      for language, block in record["languages"].items()}
             print(f"[{done}/{total}] round {round_} {cell['id']}: {record['status']} {rates} "
                   f"{record.get('error', '')}", flush=True)
         if stopped:
             break
-    complete = not stopped and not failed
-    status = {"phase": "complete" if complete else ("stopped" if stopped else "incomplete"),
-              "finished": complete, "failed_cells": failed}
+    paused = last_round < experiment["rounds"]
+    complete = not stopped and not failed and not paused
+    phase = ("complete" if complete else "stopped" if stopped else "incomplete" if failed
+             else f"paused after round {last_round}")
+    status = {"phase": phase, "finished": complete, "failed_cells": failed}
     atomic_json(root / "status.json", status)
     return status
+
+
+def top_level(experiment: dict) -> int | None:
+    """Largest KV budget any NEO system is started with (None = all free memory)."""
+    levels = [b for system in experiment["systems"] if system in NEO_SYSTEMS for b in memory_levels(experiment, system)]
+    if not levels:
+        raise ValueError("No NEO system in the experiment")
+    return None if None in levels else max(levels)
+
+
+def calibrate_neo(machine_path: str, experiment_path: str, output: str) -> dict:
+    """Build NEO's profile once, at the largest budget, then measure its CPU launch time.
+
+    NEO re-profiles and overwrites a table when a start needs a larger one, so the profile must come
+    from the largest start: GPU-only gets a few more blocks than the hybrid at the same budget, hence it
+    goes first. The hybrid then reuses those tables and measures the launch time (lnch.json).
+    """
+    machine, experiment = read_json(machine_path), read_json(experiment_path)
+    validate_serving(experiment)
+    root = Path(output)
+    root.mkdir(parents=True, exist_ok=True)
+    profile = Path(machine["neo_profile_dir"])
+    blocks = top_level(experiment)
+    stats = {}
+    for system, extra in (("neo_base", ()), ("neo", ("--profile-cpu-launch",))):
+        log = root / f"calibrate-{system}-{memory_label(blocks)}-{int(time.time())}.log"
+        with serving(system, blocks, machine, experiment, log, extra):
+            stats[system] = get_json(machine["port"], "/stats")
+    measured = measured_cpu_launch_ms(profile)
+    if abs(stats["neo"].get("cpu_launch_time_ms", float("nan")) - measured) > 1e-6:
+        raise RuntimeError(f"NEO reported {stats['neo'].get('cpu_launch_time_ms')} ms, lnch.json gives {measured}")
+    result = {"machine_id": machine["machine_id"], "top_level": memory_label(blocks),
+              "cpu_launch_time_ms": measured, "authors_cpu_launch_ms": AUTHORS_CPU_LAUNCH_MS,
+              "lnch": read_json(profile / LAUNCH_PROFILE),
+              "profile_sha256": profile_hashes(profile, NEO_PROFILE_FILES + (LAUNCH_PROFILE,)),
+              "finished_utc": datetime.now(timezone.utc).isoformat()}
+    atomic_json(root / "calibration.json", result)
+    print(f"Measured CPU launch time: {measured:.6f} ms per layer (authors: {AUTHORS_CPU_LAUNCH_MS}). "
+          f"Set \"neo_cpu_launch_ms\": {measured!r} in {machine_path}.")
+    return result
 
 
 # ------------------------------------------------------------------------- analysis
@@ -535,6 +631,11 @@ def load_serving(root: Path) -> tuple[dict, dict, list[dict]]:
                 if block["requests"] != requests_for(cell["load"], experiment):
                     raise ValueError(f"Wrong request count: {path.name} {language}")
                 telemetry, work = block["telemetry"], block["work"]
+                expected = {"neo": AUTHORS_CPU_LAUNCH_MS, "neo_tuned": machine.get("neo_cpu_launch_ms")}
+                if cell["system"] in expected and (work.get("cpu_launch_time_ms") is None or
+                                                   abs(work["cpu_launch_time_ms"] - expected[cell["system"]]) > 1e-6):
+                    raise ValueError(f"{path.name}: scheduler used CPU launch time {work.get('cpu_launch_time_ms')}, "
+                                     f"expected {expected[cell['system']]}")
                 rows.append({
                     "system": cell["system"], "memory": memory_label(cell["blocks"]), "load": cell["load"],
                     "language": language, "round": round_, "position": block["position"],
@@ -543,6 +644,7 @@ def load_serving(root: Path) -> tuple[dict, dict, list[dict]]:
                                                    "steady_generated_tokens_per_s", "requests_per_s",
                                                    "mean_input_tokens", "mean_latency_s", "p95_latency_s",
                                                    "mean_ttft_s", "mean_time_per_output_token_ms")},
+                    "cpu_launch_time_ms": work.get("cpu_launch_time_ms"),
                     "cpu_decode_share": work.get("cpu_decode_share"),
                     "pipelined_share": work.get("pipelined_share"),
                     "swap_out_requests": work.get("swap_out_requests"),
@@ -576,7 +678,7 @@ def aggregate(rows: list[dict]) -> list[dict]:
 
 
 def crossovers(table: list[dict], loads: list[int]) -> list[dict]:
-    """Per memory level and language: NEO against the same engine GPU-only at each load.
+    """Per hybrid mode, memory level and language: NEO against the same engine GPU-only at each load.
 
     NEO wins at a load when its slowest round beats the GPU-only fastest round and GPU-only
     is saturated there: it swapped requests out, or it grew less than its own round range
@@ -584,10 +686,11 @@ def crossovers(table: list[dict], loads: list[int]) -> list[dict]:
     """
     index = {(r["system"], r["memory"], r["load"], r["language"]): r for r in table}
     result = []
-    for memory, language in sorted({(r["memory"], r["language"]) for r in table}):
+    for system, memory, language in sorted({(r["system"], r["memory"], r["language"])
+                                            for r in table if r["system"] in HYBRID}):
         steps, crossover, previous = [], None, None
         for load in sorted(loads):
-            neo, base = index.get(("neo", memory, load, language)), index.get(("neo_base", memory, load, language))
+            neo, base = index.get((system, memory, load, language)), index.get(("neo_base", memory, load, language))
             if neo is None or base is None:
                 continue
             growth = None if previous is None else base["generated_tokens_per_s"] / previous - 1
@@ -600,7 +703,8 @@ def crossovers(table: list[dict], loads: list[int]) -> list[dict]:
             if wins and crossover is None:
                 crossover = load
             previous = base["generated_tokens_per_s"]
-        result.append({"memory": memory, "language": language, "crossover_load": crossover, "steps": steps})
+        result.append({"system": system, "memory": memory, "language": language, "crossover_load": crossover,
+                       "steps": steps})
     return result
 
 
@@ -623,14 +727,17 @@ def report(experiment: dict, machine: dict, table: list[dict], crossing: list[di
              f"Closed loop of `load` clients; {experiment['rounds']} rounds, a fresh server start per cell; "
              f"{experiment['output_tokens']} generated tokens per request. Throughput is generated tokens per "
              "second of wall time. NEO is compared with the same engine run with `--always-use-gpu` "
-             "(GPU-only) at the same KV-cache budget; vLLM is an external reference.", "",
+             "(GPU-only) at the same KV-cache budget; vLLM is an external reference. `neo` is NEO as shipped "
+             f"(scheduler CPU launch time {AUTHORS_CPU_LAUNCH_MS} ms per layer); `neo_tuned` uses the launch time "
+             f"measured on this machine ({machine.get('neo_cpu_launch_ms')} ms).", "",
              "## Where NEO overtakes GPU-only", "",
-             "| Memory | Language | Smallest winning load | Gain at each load, % (* = GPU-only saturated) |",
-             "|---|---|---:|---|"]
+             "| NEO mode | Memory | Language | Smallest winning load | Gain at each load, % (* = GPU-only saturated) |",
+             "|---|---|---|---:|---|"]
     for item in crossing:
         gains = ", ".join(f"{step['load']}: {step['gain_pct']:+.1f}{'*' if step['base_saturated'] else ''}"
                           for step in item["steps"])
-        lines.append(f"| {item['memory']} | {item['language']} | {item['crossover_load'] or 'none'} | {gains} |")
+        lines.append(f"| {item['system']} | {item['memory']} | {item['language']} | "
+                     f"{item['crossover_load'] or 'none'} | {gains} |")
     lines += ["", "## All cells", "",
               "| System | Memory | Load | Language | Input tokens | Generated tok/s | Steady tok/s | Spread, % | "
               "Latency, s | p95, s | TTFT, s | CPU decode share | Swapped out | CPU cores | GPU util, % |",
