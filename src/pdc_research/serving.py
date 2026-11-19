@@ -183,7 +183,10 @@ def server_environment(system: str, machine: dict) -> dict:
         if machine.get("omp_threads"):
             env["OMP_NUM_THREADS"] = str(machine["omp_threads"])
         if machine.get("omp_cpu_affinity"):
-            env["GOMP_CPU_AFFINITY"] = machine["omp_cpu_affinity"]  # binds only the OpenMP CPU-attention threads
+            # Careful: libgomp also binds the INITIAL thread to the first CPU of the list at start-up, and every
+            # thread and Ray process started later inherits it, so the whole server ends up on one core.
+            # The lab machines therefore leave this unset (as the NEO authors do: numactl -N 0, no pinning).
+            env["GOMP_CPU_AFFINITY"] = machine["omp_cpu_affinity"]
     return env
 
 
@@ -409,6 +412,19 @@ def language_cases(cases: dict, language: str, count: int, seed: int) -> tuple[l
     return order, [passages[index] for index in order]
 
 
+def cpu_affinity(pid: int) -> dict:
+    """CPUs the server process and its threads may run on (catches accidental pinning)."""
+    try:
+        threads = {}
+        for task in Path(f"/proc/{pid}/task").iterdir():
+            cpus = next(line.split(":", 1)[1].strip() for line in (task / "status").read_text().splitlines()
+                        if line.startswith("Cpus_allowed_list"))
+            threads[cpus] = threads.get(cpus, 0) + 1
+        return {"process": sorted(os.sched_getaffinity(pid)), "threads_by_cpu_list": threads}
+    except OSError as exc:
+        return {"error": str(exc)}
+
+
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -428,6 +444,7 @@ def run_cell(machine: dict, experiment: dict, cell: dict, cases: dict, round_: i
         with serving(system, cell["blocks"], machine, experiment, log) as pid:
             record["kv_reported"] = reported_kv(system, log.read_text(errors="replace"), experiment["block_size"])
             record["server_vram_after_load"] = server_gpu_memory(pid, process_tree(pid))
+            record["server_cpu_affinity"] = cpu_affinity(pid)
             record["conditions"] = run_conditions()
             languages = language_order(experiment, round_, cell["id"])
             seed = experiment["seed"] + 1000 * round_
