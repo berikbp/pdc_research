@@ -409,6 +409,10 @@ def language_cases(cases: dict, language: str, count: int, seed: int) -> tuple[l
     return order, [passages[index] for index in order]
 
 
+def utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
 def run_cell(machine: dict, experiment: dict, cell: dict, cases: dict, round_: int, log: Path) -> dict:
     system, load = cell["system"], cell["load"]
     record = {"cell": cell, "round": round_, "started_utc": datetime.now(timezone.utc).isoformat(),
@@ -435,12 +439,17 @@ def run_cell(machine: dict, experiment: dict, cell: dict, cases: dict, round_: i
                 for position, language in enumerate(languages):
                     order, block = language_cases(cases, language, measured, seed)
                     warm = experiment["warmup_waves"] * load
+                    warmup_started = utc_now()
                     drive(send, [block[index % len(block)] for index in range(warm)], load)
                     mark, before = telemetry.mark(), counters(system, port)
+                    measured_started = utc_now()
                     requests = drive(send, block, load)
+                    measured_finished = utc_now()
                     work = counter_delta(before, counters(system, port))
+                    # UTC bounds let the per-second journals (lab_monitor, lab_memmon) be cut per language.
                     record["languages"][language] = {
-                        "position": position, "passage_order": order,
+                        "position": position, "passage_order": order, "warmup_started_utc": warmup_started,
+                        "measured_started_utc": measured_started, "measured_finished_utc": measured_finished,
                         **summarize_requests(requests, experiment["output_tokens"]),
                         "work": work, "telemetry": telemetry.since(mark), "requests_detail": requests}
             record["server_vram_after_requests"] = server_gpu_memory(pid, process_tree(pid))
