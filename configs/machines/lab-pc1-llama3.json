@@ -1,0 +1,20 @@
+{
+  "machine_id": "lab-pc1-rtx5090-llama3",
+  "python": "/work/neo-venv/bin/python",
+  "vllm": "/work/neo-venv/bin/vllm",
+  "neo_dir": "/work/NEO",
+  "model": "/work/models/Meta-Llama-3-8B",
+  "neo_library": "/work/NEO/pacpu/build/libpacpu-llama3_8b-tp1.so",
+  "neo_profile_dir": "/work/neo-profile/serving-llama3-v1",
+  "gpu_index": 0,
+  "port": 8000,
+  "swap_gb": 20,
+  "gpu_memory_utilization": 0.9,
+  "num_layers": 32,
+  "omp_threads": 8,
+  "omp_cpu_affinity": null,
+  "startup_timeout_seconds": 1800,
+  "request_timeout_seconds": 1800,
+  "min_free_ram_gb": 8,
+  "neo_cpu_launch_ms": null
+}

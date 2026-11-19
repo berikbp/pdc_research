@@ -1,0 +1,45 @@
+{
+  "experiment_id": "serving-llama3-pc1-v1",
+  "seed": 42,
+  "output_tokens": 128,
+  "rounds": 2,
+  "systems": [
+    "neo_base",
+    "neo_tuned",
+    "neo"
+  ],
+  "memory_blocks": [
+    64,
+    96,
+    128,
+    192,
+    null
+  ],
+  "memory_blocks_by_system": {
+    "neo": [
+      64
+    ]
+  },
+  "loads": [
+    1,
+    4,
+    8,
+    16,
+    32,
+    64
+  ],
+  "languages": [
+    "eng_Latn",
+    "rus_Cyrl",
+    "kaz_Cyrl",
+    "zho_Hans",
+    "kaz_Cyrl@eng_len"
+  ],
+  "min_requests": 32,
+  "min_waves": 4,
+  "warmup_waves": 2,
+  "block_size": 16,
+  "max_model_len": 768,
+  "max_tokens_in_batch": 960,
+  "max_num_seqs": 256
+}
