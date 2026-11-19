@@ -16,5 +16,5 @@
   "startup_timeout_seconds": 1800,
   "request_timeout_seconds": 1800,
   "min_free_ram_gb": 8,
-  "neo_cpu_launch_ms": null
+  "neo_cpu_launch_ms": 0.17780504156447327
 }
