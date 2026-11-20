@@ -11,7 +11,13 @@ GPU is 3.1 times faster than the CPU alone. Language shifts the best
 configuration only in that memory-bound regime under concurrent requests, and
 only through token length.
 
-Read the **[current full report](docs/current-report.md)** for the measurements,
+**Stage 2** moved to two lab PCs (RTX 5090 and RTX 4080) and the NEO engine,
+which offloads part of the decode attention to the CPU. Under KV-cache pressure
+it beats GPU-only by up to 2.0×, Kazakh reaches that point at half the load of
+English, and the shift is explained by token length alone. See the
+**[stage 2 report](docs/stage2-report.md)**.
+
+Read the **[stage 1 report](docs/current-report.md)** for the laptop measurements,
 figures, the comparison with APEX and the limitations. The first stage, measured
 under WSL with the original questions from the
 [research proposal](Research_Proposal.md), is the
@@ -76,7 +82,8 @@ No model or dataset is redistributed in this repository.
 | `src/pdc_research/` | CLI, workloads, execution, checkpoints and analysis |
 | `scripts/` | Native build, asset setup and report-export entrypoints |
 | `tests/` | Tests with artificial data and mocked inference |
-| `docs/current-report.md` | Current questions, measurements and answers |
+| `docs/stage2-report.md` | Stage 2: NEO against GPU-only on two lab PCs |
+| `docs/current-report.md` | Stage 1: llama.cpp layer offload on one laptop |
 | `docs/report-2026-10-wsl.md` | First stage under WSL, superseded |
 | `docs/results/` | Small report tables and uncertainty summaries |
 

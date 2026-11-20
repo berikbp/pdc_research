@@ -1,0 +1,380 @@
+{
+  "clear_threshold": 0.05,
+  "setups": {
+    "pc2-llama2": {
+      "label": "RTX 4080 + Llama-2-7B",
+      "input_tokens": {
+        "eng_Latn": 108.8,
+        "rus_Cyrl": 183.7,
+        "zho_Hans": 211.4,
+        "kaz_Cyrl": 284.4,
+        "kaz_Cyrl@eng_len": 108.8
+      },
+      "memory": {
+        "b0064": {
+          "eng_Latn": {
+            "first_winning_load": 16,
+            "best_ratio": 1.809,
+            "worst_ratio": 0.952
+          },
+          "rus_Cyrl": {
+            "first_winning_load": 8,
+            "best_ratio": 1.712,
+            "worst_ratio": 0.942
+          },
+          "zho_Hans": {
+            "first_winning_load": 8,
+            "best_ratio": 1.802,
+            "worst_ratio": 0.948
+          },
+          "kaz_Cyrl": {
+            "first_winning_load": 8,
+            "best_ratio": 2.007,
+            "worst_ratio": 0.947
+          },
+          "kaz_Cyrl@eng_len": {
+            "first_winning_load": 16,
+            "best_ratio": 1.828,
+            "worst_ratio": 0.952
+          }
+        },
+        "b0096": {
+          "eng_Latn": {
+            "first_winning_load": 32,
+            "best_ratio": 1.381,
+            "worst_ratio": 0.966
+          },
+          "rus_Cyrl": {
+            "first_winning_load": 16,
+            "best_ratio": 1.288,
+            "worst_ratio": 0.974
+          },
+          "zho_Hans": {
+            "first_winning_load": 16,
+            "best_ratio": 1.326,
+            "worst_ratio": 0.968
+          },
+          "kaz_Cyrl": {
+            "first_winning_load": 16,
+            "best_ratio": 1.413,
+            "worst_ratio": 0.99
+          },
+          "kaz_Cyrl@eng_len": {
+            "first_winning_load": 32,
+            "best_ratio": 1.284,
+            "worst_ratio": 0.957
+          }
+        }
+      },
+      "neo_as_shipped": {
+        "blocks": 60,
+        "best_ratio": 1.004,
+        "median_ratio": 0.968
+      }
+    },
+    "pc1-llama3": {
+      "label": "RTX 5090 + Llama-3-8B",
+      "input_tokens": {
+        "eng_Latn": 92.6,
+        "rus_Cyrl": 154.5,
+        "zho_Hans": 118.1,
+        "kaz_Cyrl": 301.4,
+        "kaz_Cyrl@eng_len": 92.6
+      },
+      "memory": {
+        "b0064": {
+          "eng_Latn": {
+            "first_winning_load": 32,
+            "best_ratio": 1.62,
+            "worst_ratio": 0.91
+          },
+          "rus_Cyrl": {
+            "first_winning_load": 16,
+            "best_ratio": 1.671,
+            "worst_ratio": 0.78
+          },
+          "zho_Hans": {
+            "first_winning_load": 32,
+            "best_ratio": 1.649,
+            "worst_ratio": 0.848
+          },
+          "kaz_Cyrl": {
+            "first_winning_load": 8,
+            "best_ratio": 1.895,
+            "worst_ratio": 0.822
+          },
+          "kaz_Cyrl@eng_len": {
+            "first_winning_load": 16,
+            "best_ratio": 1.89,
+            "worst_ratio": 0.905
+          }
+        },
+        "b0096": {
+          "eng_Latn": {
+            "first_winning_load": 64,
+            "best_ratio": 1.182,
+            "worst_ratio": 0.902
+          },
+          "rus_Cyrl": {
+            "first_winning_load": 32,
+            "best_ratio": 1.315,
+            "worst_ratio": 0.917
+          },
+          "zho_Hans": {
+            "first_winning_load": 32,
+            "best_ratio": 1.362,
+            "worst_ratio": 0.84
+          },
+          "kaz_Cyrl": {
+            "first_winning_load": 16,
+            "best_ratio": 1.309,
+            "worst_ratio": 0.841
+          },
+          "kaz_Cyrl@eng_len": {
+            "first_winning_load": 64,
+            "best_ratio": 1.205,
+            "worst_ratio": 0.826
+          }
+        },
+        "b0128": {
+          "eng_Latn": {
+            "first_winning_load": null,
+            "best_ratio": 1.011,
+            "worst_ratio": 0.863
+          },
+          "rus_Cyrl": {
+            "first_winning_load": null,
+            "best_ratio": 1.035,
+            "worst_ratio": 0.792
+          },
+          "zho_Hans": {
+            "first_winning_load": null,
+            "best_ratio": 1.109,
+            "worst_ratio": 0.964
+          },
+          "kaz_Cyrl": {
+            "first_winning_load": null,
+            "best_ratio": 1.069,
+            "worst_ratio": 0.937
+          },
+          "kaz_Cyrl@eng_len": {
+            "first_winning_load": null,
+            "best_ratio": 1.007,
+            "worst_ratio": 0.867
+          }
+        },
+        "b0192": {
+          "eng_Latn": {
+            "first_winning_load": null,
+            "best_ratio": 1.008,
+            "worst_ratio": 0.842
+          },
+          "rus_Cyrl": {
+            "first_winning_load": null,
+            "best_ratio": 1.004,
+            "worst_ratio": 0.769
+          },
+          "zho_Hans": {
+            "first_winning_load": null,
+            "best_ratio": 1.003,
+            "worst_ratio": 0.748
+          },
+          "kaz_Cyrl": {
+            "first_winning_load": null,
+            "best_ratio": 1.005,
+            "worst_ratio": 0.778
+          },
+          "kaz_Cyrl@eng_len": {
+            "first_winning_load": null,
+            "best_ratio": 1.001,
+            "worst_ratio": 0.793
+          }
+        },
+        "free": {
+          "eng_Latn": {
+            "first_winning_load": null,
+            "best_ratio": 1.002,
+            "worst_ratio": 0.987
+          },
+          "rus_Cyrl": {
+            "first_winning_load": null,
+            "best_ratio": 1.005,
+            "worst_ratio": 0.998
+          },
+          "zho_Hans": {
+            "first_winning_load": null,
+            "best_ratio": 1.006,
+            "worst_ratio": 0.994
+          },
+          "kaz_Cyrl": {
+            "first_winning_load": null,
+            "best_ratio": 1.004,
+            "worst_ratio": 0.993
+          },
+          "kaz_Cyrl@eng_len": {
+            "first_winning_load": null,
+            "best_ratio": 1.0,
+            "worst_ratio": 0.987
+          }
+        }
+      },
+      "neo_as_shipped": {
+        "blocks": 60,
+        "best_ratio": 1.029,
+        "median_ratio": 0.985
+      }
+    },
+    "pc1-llama2": {
+      "label": "RTX 5090 + Llama-2-7B",
+      "input_tokens": {
+        "eng_Latn": 108.9,
+        "rus_Cyrl": 183.9,
+        "zho_Hans": 211.6,
+        "kaz_Cyrl": 284.7,
+        "kaz_Cyrl@eng_len": 108.9
+      },
+      "memory": {
+        "b0064": {
+          "eng_Latn": {
+            "first_winning_load": null,
+            "best_ratio": 1.003,
+            "worst_ratio": 0.617
+          },
+          "rus_Cyrl": {
+            "first_winning_load": null,
+            "best_ratio": 1.0,
+            "worst_ratio": 0.619
+          },
+          "zho_Hans": {
+            "first_winning_load": null,
+            "best_ratio": 0.997,
+            "worst_ratio": 0.658
+          },
+          "kaz_Cyrl": {
+            "first_winning_load": null,
+            "best_ratio": 0.999,
+            "worst_ratio": 0.615
+          },
+          "kaz_Cyrl@eng_len": {
+            "first_winning_load": null,
+            "best_ratio": 1.001,
+            "worst_ratio": 0.633
+          }
+        },
+        "b0096": {
+          "eng_Latn": {
+            "first_winning_load": null,
+            "best_ratio": 0.999,
+            "worst_ratio": 0.748
+          },
+          "rus_Cyrl": {
+            "first_winning_load": null,
+            "best_ratio": 0.999,
+            "worst_ratio": 0.83
+          },
+          "zho_Hans": {
+            "first_winning_load": null,
+            "best_ratio": 1.003,
+            "worst_ratio": 0.738
+          },
+          "kaz_Cyrl": {
+            "first_winning_load": null,
+            "best_ratio": 1.0,
+            "worst_ratio": 0.867
+          },
+          "kaz_Cyrl@eng_len": {
+            "first_winning_load": null,
+            "best_ratio": 1.013,
+            "worst_ratio": 0.73
+          }
+        },
+        "b0128": {
+          "eng_Latn": {
+            "first_winning_load": null,
+            "best_ratio": 1.001,
+            "worst_ratio": 0.861
+          },
+          "rus_Cyrl": {
+            "first_winning_load": null,
+            "best_ratio": 1.002,
+            "worst_ratio": 0.891
+          },
+          "zho_Hans": {
+            "first_winning_load": null,
+            "best_ratio": 1.003,
+            "worst_ratio": 0.888
+          },
+          "kaz_Cyrl": {
+            "first_winning_load": null,
+            "best_ratio": 0.998,
+            "worst_ratio": 0.884
+          },
+          "kaz_Cyrl@eng_len": {
+            "first_winning_load": null,
+            "best_ratio": 1.0,
+            "worst_ratio": 0.871
+          }
+        },
+        "b0192": {
+          "eng_Latn": {
+            "first_winning_load": null,
+            "best_ratio": 1.002,
+            "worst_ratio": 0.888
+          },
+          "rus_Cyrl": {
+            "first_winning_load": null,
+            "best_ratio": 1.003,
+            "worst_ratio": 0.851
+          },
+          "zho_Hans": {
+            "first_winning_load": null,
+            "best_ratio": 0.999,
+            "worst_ratio": 0.863
+          },
+          "kaz_Cyrl": {
+            "first_winning_load": null,
+            "best_ratio": 1.0,
+            "worst_ratio": 0.868
+          },
+          "kaz_Cyrl@eng_len": {
+            "first_winning_load": null,
+            "best_ratio": 1.001,
+            "worst_ratio": 0.893
+          }
+        },
+        "free": {
+          "eng_Latn": {
+            "first_winning_load": null,
+            "best_ratio": 1.002,
+            "worst_ratio": 0.985
+          },
+          "rus_Cyrl": {
+            "first_winning_load": null,
+            "best_ratio": 1.005,
+            "worst_ratio": 0.993
+          },
+          "zho_Hans": {
+            "first_winning_load": null,
+            "best_ratio": 1.002,
+            "worst_ratio": 0.997
+          },
+          "kaz_Cyrl": {
+            "first_winning_load": null,
+            "best_ratio": 1.004,
+            "worst_ratio": 0.991
+          },
+          "kaz_Cyrl@eng_len": {
+            "first_winning_load": null,
+            "best_ratio": 1.008,
+            "worst_ratio": 0.988
+          }
+        }
+      },
+      "neo_as_shipped": {
+        "blocks": 60,
+        "best_ratio": 1.006,
+        "median_ratio": 0.971
+      }
+    }
+  }
+}

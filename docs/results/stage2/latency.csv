@@ -1,0 +1,13 @@
+setup,memory,load,language,system,tok_s,mean_latency_s,p95_latency_s,ttft_s,time_per_output_token_ms
+pc2-llama2,b0064,32,eng_Latn,neo_base,215.6,16.7,19.2,12.93,29.7
+pc2-llama2,b0064,32,eng_Latn,neo_tuned,360.8,10.64,14.73,0.26,81.7
+pc2-llama2,b0064,32,kaz_Cyrl,neo_base,100.7,35.87,41.87,32.39,27.4
+pc2-llama2,b0064,32,kaz_Cyrl,neo_tuned,184.5,20.05,27.5,0.47,154.2
+pc1-llama3,b0064,32,eng_Latn,neo_base,466.3,7.84,9.45,5.81,15.9
+pc1-llama3,b0064,32,eng_Latn,neo_tuned,652.7,5.77,7.12,0.13,44.4
+pc1-llama3,b0064,32,kaz_Cyrl,neo_base,181.6,19.87,23.11,18.06,14.2
+pc1-llama3,b0064,32,kaz_Cyrl,neo_tuned,329.8,11.16,15.03,0.23,86.1
+pc1-llama2,b0064,32,eng_Latn,neo_base,466.2,7.7,8.91,5.96,13.7
+pc1-llama2,b0064,32,eng_Latn,neo_tuned,287.4,12.9,26.73,0.13,100.5
+pc1-llama2,b0064,32,kaz_Cyrl,neo_base,218.4,16.52,19.23,14.91,12.7
+pc1-llama2,b0064,32,kaz_Cyrl,neo_tuned,140.7,25.59,43.61,0.19,200.0

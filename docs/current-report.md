@@ -1,6 +1,6 @@
 # Current research report
 
-**Status: 16 November 2026.** Stage 1 (one laptop, native Linux, llama.cpp) is measured and analysed. Stage 2 (a server with vLLM and NEO) has not started. The first stage of the project, measured under WSL with the original research questions, is kept as the [October report](report-2026-10-wsl.md).
+**Status: 16 November 2026.** Stage 1 (one laptop, native Linux, llama.cpp) is measured and analysed. Stage 2 (two lab PCs with NEO and vLLM, serving under load) is reported in the [stage 2 report](stage2-report.md). The first stage of the project, measured under WSL with the original research questions, is kept as the [October report](report-2026-10-wsl.md).
 
 ## Main findings
 

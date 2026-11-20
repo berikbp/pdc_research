@@ -1,0 +1,242 @@
+[
+  {
+    "system": "neo_tuned",
+    "memory": "b0064",
+    "language": "eng_Latn",
+    "crossover_load": 16,
+    "steps": [
+      {
+        "load": 8,
+        "neo": 205.0695250607433,
+        "base": 218.70079688921186,
+        "gain_pct": -6.232840493660296,
+        "base_saturated": true,
+        "neo_wins": false
+      },
+      {
+        "load": 16,
+        "neo": 297.7184883406354,
+        "base": 212.3461111570522,
+        "gain_pct": 40.2043516212272,
+        "base_saturated": true,
+        "neo_wins": true
+      }
+    ]
+  },
+  {
+    "system": "neo_tuned",
+    "memory": "b0064",
+    "language": "kaz_Cyrl",
+    "crossover_load": 8,
+    "steps": [
+      {
+        "load": 8,
+        "neo": 145.46041755112768,
+        "base": 100.75405721294061,
+        "gain_pct": 44.37177179247635,
+        "base_saturated": true,
+        "neo_wins": true
+      },
+      {
+        "load": 16,
+        "neo": 175.9672207721367,
+        "base": 101.10702635468336,
+        "gain_pct": 74.04054605942405,
+        "base_saturated": true,
+        "neo_wins": true
+      }
+    ]
+  },
+  {
+    "system": "neo_tuned",
+    "memory": "b0064",
+    "language": "kaz_Cyrl@eng_len",
+    "crossover_load": 16,
+    "steps": [
+      {
+        "load": 8,
+        "neo": 202.534650941873,
+        "base": 216.56348572269164,
+        "gain_pct": -6.477931740894904,
+        "base_saturated": true,
+        "neo_wins": false
+      },
+      {
+        "load": 16,
+        "neo": 295.2617872157379,
+        "base": 212.69184046886159,
+        "gain_pct": 38.8213983972576,
+        "base_saturated": true,
+        "neo_wins": true
+      }
+    ]
+  },
+  {
+    "system": "neo_tuned",
+    "memory": "b0064",
+    "language": "rus_Cyrl",
+    "crossover_load": 8,
+    "steps": [
+      {
+        "load": 8,
+        "neo": 163.94233075685923,
+        "base": 148.8741848947668,
+        "gain_pct": 10.121396045085639,
+        "base_saturated": true,
+        "neo_wins": true
+      },
+      {
+        "load": 16,
+        "neo": 240.02332402508105,
+        "base": 149.31729230455696,
+        "gain_pct": 60.747171557005174,
+        "base_saturated": true,
+        "neo_wins": true
+      }
+    ]
+  },
+  {
+    "system": "neo_tuned",
+    "memory": "b0064",
+    "language": "zho_Hans",
+    "crossover_load": 8,
+    "steps": [
+      {
+        "load": 8,
+        "neo": 157.46177939002922,
+        "base": 135.16106404064038,
+        "gain_pct": 16.49936356130153,
+        "base_saturated": true,
+        "neo_wins": true
+      },
+      {
+        "load": 16,
+        "neo": 211.31255761818096,
+        "base": 133.415543072438,
+        "gain_pct": 58.38676120626272,
+        "base_saturated": true,
+        "neo_wins": true
+      }
+    ]
+  },
+  {
+    "system": "neo_tuned",
+    "memory": "b0096",
+    "language": "eng_Latn",
+    "crossover_load": 8,
+    "steps": [
+      {
+        "load": 8,
+        "neo": 268.5209152780819,
+        "base": 267.8619474357416,
+        "gain_pct": 0.24601024843153851,
+        "base_saturated": true,
+        "neo_wins": true
+      },
+      {
+        "load": 16,
+        "neo": 307.76635068825436,
+        "base": 319.2738169787943,
+        "gain_pct": -3.6042624476482654,
+        "base_saturated": true,
+        "neo_wins": false
+      }
+    ]
+  },
+  {
+    "system": "neo_tuned",
+    "memory": "b0096",
+    "language": "kaz_Cyrl",
+    "crossover_load": 8,
+    "steps": [
+      {
+        "load": 8,
+        "neo": 154.11712321009446,
+        "base": 151.2073737150803,
+        "gain_pct": 1.9243436503943112,
+        "base_saturated": true,
+        "neo_wins": true
+      },
+      {
+        "load": 16,
+        "neo": 191.67555655963523,
+        "base": 152.71525102811708,
+        "gain_pct": 25.511731977800302,
+        "base_saturated": true,
+        "neo_wins": true
+      }
+    ]
+  },
+  {
+    "system": "neo_tuned",
+    "memory": "b0096",
+    "language": "kaz_Cyrl@eng_len",
+    "crossover_load": 8,
+    "steps": [
+      {
+        "load": 8,
+        "neo": 268.5401553829968,
+        "base": 268.35051457202536,
+        "gain_pct": 0.07066906924841909,
+        "base_saturated": true,
+        "neo_wins": true
+      },
+      {
+        "load": 16,
+        "neo": 305.4607454691348,
+        "base": 321.7866920743409,
+        "gain_pct": -5.073530698228634,
+        "base_saturated": true,
+        "neo_wins": false
+      }
+    ]
+  },
+  {
+    "system": "neo_tuned",
+    "memory": "b0096",
+    "language": "rus_Cyrl",
+    "crossover_load": 16,
+    "steps": [
+      {
+        "load": 8,
+        "neo": 208.9066421808564,
+        "base": 214.72111572838574,
+        "gain_pct": -2.7079188405878196,
+        "base_saturated": true,
+        "neo_wins": false
+      },
+      {
+        "load": 16,
+        "neo": 260.6324765642107,
+        "base": 214.08243515865837,
+        "gain_pct": 21.743979776320145,
+        "base_saturated": true,
+        "neo_wins": true
+      }
+    ]
+  },
+  {
+    "system": "neo_tuned",
+    "memory": "b0096",
+    "language": "zho_Hans",
+    "crossover_load": 16,
+    "steps": [
+      {
+        "load": 8,
+        "neo": 184.79193031411054,
+        "base": 185.07082275602022,
+        "gain_pct": -0.15069498138955417,
+        "base_saturated": true,
+        "neo_wins": false
+      },
+      {
+        "load": 16,
+        "neo": 235.17744396634765,
+        "base": 197.59280685056126,
+        "gain_pct": 19.02125776481911,
+        "base_saturated": true,
+        "neo_wins": true
+      }
+    ]
+  }
+]

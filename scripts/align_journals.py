@@ -5,7 +5,8 @@ UTC bounds the runner records (measured_started_utc / measured_finished_utc). Pe
 read/write GB/s, CPU package W, GPU W, SM clock, power/thermal violations, PCIe MB/s, and the KV-cache
 bytes the CPU is expected to read (CPU-decoded tokens/s x context x KV bytes per token).
 
-    python scripts/align_journals.py RESULTS_DIR OUTPUT.json   # RESULTS_DIR = clone of pdc-lab-runs
+    python scripts/align_journals.py RESULTS_DIR docs/results/stage2/journal-blocks.csv   # or OUTPUT.json
+    # RESULTS_DIR = clone of pdc-lab-runs
 """
 import json, glob, sys, bisect, statistics as st, collections as co
 from datetime import datetime, timezone
@@ -50,5 +51,13 @@ for pc, run, gpu, model in runs:
                 gpu_w=st.mean(x[1] for x in g), pclk=st.mean(x[2] for x in g), pviol=st.mean(x[3] for x in g), tviol=max(x[4] for x in g),
                 rx=st.mean(x[5] for x in g), tx=st.mean(x[6] for x in g), sm=st.mean(x[7] for x in g),
                 kv_read_gbs=cpu_tok_s * ctx * KV[model] / 1e9, wall=wall, tokens=b["requests"] * 128))
-json.dump(out, open(sys.argv[2], "w"))
+if sys.argv[2].endswith(".csv"):   # the versioned table docs/results/stage2/journal-blocks.csv
+    import csv
+    keys = list(out[0])
+    with open(sys.argv[2], "w", newline="") as stream:
+        writer = csv.writer(stream, lineterminator="\n"); writer.writerow(keys)
+        for r in sorted(out, key=lambda r: (r["pc"], r["model"], r["system"], str(r["blocks"]), r["load"], r["lang"], r["round"])):
+            writer.writerow([round(r[k], 4) if isinstance(r[k], float) else r[k] for k in keys])
+else:
+    json.dump(out, open(sys.argv[2], "w"))
 print(len(out), "blocks with journal windows")
