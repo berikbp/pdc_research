@@ -70,10 +70,17 @@ The memory controllers were sampled every second during every measured block. Du
 
 On the 5090 machine the CPU reads about 12 GB/s with either model. Llama-2-7B stores 512 KiB of KV cache per token; Llama-3-8B, with 8 KV heads instead of 32, stores 128 KiB. For the same traffic the CPU therefore finishes four times as many Llama-3 tokens, which is enough to keep up with an RTX 5090. With Llama-2 it is not, and NEO's CPU share only slows the GPU down. The 4080 is slow enough that the i9-13900K keeps up even with Llama-2.
 
-**What limits the CPU is open.** Peak memory bandwidth was not measured, and the memory speed set in the BIOS was not recorded. Both machines have 128 GB of DDR5 in four 32 GB modules on two channels (125 GiB visible to the system). With two modules per channel, Intel specifies roughly DDR5-4000 to 4800 for these processors (higher if the board applies an XMP profile), which puts the theoretical peak at about 64–90 GB/s per machine (transfer rate × 16 bytes). Against that estimate:
+**What limits the CPU is open.** Peak memory bandwidth was not measured, and the memory speed set in the BIOS was not recorded. Both machines have 128 GB of DDR5 in four 32 GB modules, two per channel (125 GiB visible to the system). Intel's datasheets give the supported speed for that population as:
 
-- **PC1** reads 12–13 GB/s on average during CPU decode, at most 19.5 GB/s: under a third of the lowest estimate, and less than a single thread moved in a copy test on the same machine (49 GB/s reads plus writes, about half of it reads). The CPU path on PC1 is very unlikely to be bandwidth-bound.
-- **PC2** reads 25 GB/s on average, at most 34 GB/s: about 40–55% of the theoretical estimate. Sustained bandwidth is usually well below the theoretical peak, so on PC2 bandwidth may be part of the limit.
+| Machine | Processor | Two DIMMs per channel, single-rank | dual-rank | Theoretical peak (× 16 bytes, two channels) |
+|---|---|---:|---:|---:|
+| PC1 | Core Ultra 9 285K | 4800 MT/s | 4400 MT/s | 70–77 GB/s |
+| PC2 | Core i9-13900K | 4000 MT/s | 3600 MT/s | 58–64 GB/s |
+
+Sources: the SKU support matrices in the [Core Ultra 200S datasheet](https://edc.intel.com/content/www/us/en/design/products/platforms/details/arrow-lake-s/core-ultra-200s-series-processors-datasheet-volume-1-of-2/processor-sku-support-matrix/) and the [13th Gen Core datasheet](https://edc.intel.com/content/www/us/en/design/products/platforms/details/raptor-lake-s/13th-generation-core-processors-datasheet-volume-1-of-2/processor-sku-support-matrix/). The module rank was not recorded, hence the range. An XMP profile in the BIOS would raise the speed above these values, so they are a lower estimate of the theoretical peak.
+
+- **PC1** reads 12.8 GB/s on average during CPU decode, at most 19.5 GB/s: 17–28% of the estimate, and less than a single thread moved in a copy test on the same machine (49 GB/s reads plus writes, about half of it reads). The CPU path on PC1 is very unlikely to be bandwidth-bound.
+- **PC2** reads 25.2 GB/s on average, at most 34.0 GB/s: 39–59% of the estimate. Sustained bandwidth on desktop DDR5 is typically well below the theoretical peak, so on PC2 bandwidth may be part of the limit.
 
 So the bandwidth explanation is unlikely on PC1 and undecided on PC2; compute or core latency are the alternatives. This is an estimate from the hardware configuration, not a measurement, and it is the main [future-work](#future-work) item.
 
