@@ -70,7 +70,12 @@ The memory controllers were sampled every second during every measured block. Du
 
 On the 5090 machine the CPU reads about 12 GB/s with either model. Llama-2-7B stores 512 KiB of KV cache per token; Llama-3-8B, with 8 KV heads instead of 32, stores 128 KiB. For the same traffic the CPU therefore finishes four times as many Llama-3 tokens, which is enough to keep up with an RTX 5090. With Llama-2 it is not, and NEO's CPU share only slows the GPU down. The 4080 is slow enough that the i9-13900K keeps up even with Llama-2.
 
-**What limits the CPU is open.** On PC1 the CPU reads less during decode than a single thread moved in a copy test (49 GB/s reads plus writes, about half of it reads), so the CPU path does not look bandwidth-bound there. Peak bandwidth was not measured on either machine, so this stays a hypothesis; compute or core latency would be the alternative. It is the main [future-work](#future-work) item.
+**What limits the CPU is open.** Peak memory bandwidth was not measured, and the memory speed set in the BIOS was not recorded. Both machines have 128 GB of DDR5 in four 32 GB modules on two channels (125 GiB visible to the system). With two modules per channel, Intel specifies roughly DDR5-4000 to 4800 for these processors (higher if the board applies an XMP profile), which puts the theoretical peak at about 64–90 GB/s per machine (transfer rate × 16 bytes). Against that estimate:
+
+- **PC1** reads 12–13 GB/s on average during CPU decode, at most 19.5 GB/s: under a third of the lowest estimate, and less than a single thread moved in a copy test on the same machine (49 GB/s reads plus writes, about half of it reads). The CPU path on PC1 is very unlikely to be bandwidth-bound.
+- **PC2** reads 25 GB/s on average, at most 34 GB/s: about 40–55% of the theoretical estimate. Sustained bandwidth is usually well below the theoretical peak, so on PC2 bandwidth may be part of the limit.
+
+So the bandwidth explanation is unlikely on PC1 and undecided on PC2; compute or core latency are the alternatives. This is an estimate from the hardware configuration, not a measurement, and it is the main [future-work](#future-work) item.
 
 ## What the throughput gain costs
 
@@ -160,6 +165,7 @@ Stage 1 split a model's layers between CPU and GPU (llama.cpp) and never beat GP
 - **Two machines, two GPU classes, two models**, one KV block size and one output length. The crossover loads are specific to these; the order by token length is the general result.
 - **Budgets are artificial.** KV space was capped to create memory pressure on GPUs that had plenty. A model that genuinely fills the GPU would also lose compute headroom, which is not modelled.
 - **8 CPU threads only.** The thread count was not varied after the pinning fix (see future work).
+- **No reference measurement of memory bandwidth.** The journals record how much memory traffic the CPU used, not how much the memory could deliver; the peak is estimated from the module configuration, and the DIMM speed was not recorded.
 - **Energy excludes DRAM and the rest of the system.**
 - **Response fingerprints are not comparable across engines**: vLLM hashes the response text and NEO the token IDs. Correctness was checked separately (above). Within NEO, batch composition changes fp16 rounding, so the same passage can produce different but valid continuations; GPU-only NEO shows the same.
 - **The cloud copy of the runs keeps the abandoned pinned series** (`serving-llama2-pc1-v2`) next to the measured ones; it is excluded from every table here.
