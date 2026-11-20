@@ -1,0 +1,33 @@
+{
+  "experiment_id": "serving-llama3-pc1-v1-r3",
+  "seed": 3042,
+  "output_tokens": 128,
+  "rounds": 1,
+  "systems": [
+    "neo_base",
+    "neo_tuned"
+  ],
+  "memory_blocks": [
+    64,
+    96
+  ],
+  "loads": [
+    16,
+    32
+  ],
+  "languages": [
+    "eng_Latn",
+    "rus_Cyrl",
+    "kaz_Cyrl",
+    "zho_Hans",
+    "kaz_Cyrl@eng_len"
+  ],
+  "min_requests": 32,
+  "min_waves": 4,
+  "warmup_waves": 2,
+  "block_size": 16,
+  "max_model_len": 768,
+  "max_tokens_in_batch": 960,
+  "max_num_seqs": 256,
+  "note": "Third-round replicate of the Llama-3 cells next to the crossover (64 and 96 blocks x 16/32 clients). Round 1 with a new seed: fresh passage and language order."
+}
